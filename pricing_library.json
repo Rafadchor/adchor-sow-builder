@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "name": "Creative Strategy & Brief Development",
+      "description": "Strategic positioning, audience analysis, messaging framework",
+      "category": "Strategy",
+      "unit_price": 2500
+    },
+    {
+      "name": "Campaign Concept Development",
+      "description": "2 distinct creative directions with rationale and visual references",
+      "category": "Creative",
+      "unit_price": 4500
+    },
+    {
+      "name": "Animated Video Production — 60–90 sec",
+      "description": "Concept through final delivery, includes script, storyboard, animation, VO direction",
+      "category": "Video",
+      "unit_price": 12000
+    },
+    {
+      "name": "Animated Video Production — 30 sec",
+      "description": "Short-form animated video, concept through final delivery",
+      "category": "Video",
+      "unit_price": 7500
+    },
+    {
+      "name": "Social Media Content Package (10 posts)",
+      "description": "10 branded posts with copy and design, formatted for specified platforms",
+      "category": "Social",
+      "unit_price": 3500
+    },
+    {
+      "name": "Short-Form Video Snippets (set of 3)",
+      "description": "~30-second cuts derived from primary video, formatted for social platforms",
+      "category": "Video",
+      "unit_price": 2800
+    },
+    {
+      "name": "Landing Page — Design & Copy",
+      "description": "Single-page responsive design with conversion-optimized copy",
+      "category": "Digital",
+      "unit_price": 5500
+    },
+    {
+      "name": "Email Marketing Template",
+      "description": "Branded responsive HTML email template",
+      "category": "Digital",
+      "unit_price": 1800
+    },
+    {
+      "name": "Digital Ad Set",
+      "description": "Display/social ad set in multiple sizes and formats",
+      "category": "Advertising",
+      "unit_price": 4000
+    },
+    {
+      "name": "Brand Identity Design",
+      "description": "Logo, color system, typography, and brand usage guidelines",
+      "category": "Brand",
+      "unit_price": 8500
+    },
+    {
+      "name": "Copywriting Package",
+      "description": "Full copy for a defined set of assets, includes one revision round",
+      "category": "Copy",
+      "unit_price": 3000
+    },
+    {
+      "name": "PowerPoint / Presentation Design",
+      "description": "Branded slide deck design and layout, up to 20 slides",
+      "category": "Design",
+      "unit_price": 2200
+    },
+    {
+      "name": "Social Activation & Growth Strategy",
+      "description": "Platform strategy, caption frameworks, sequencing recommendations",
+      "category": "Strategy",
+      "unit_price": 2000
+    },
+    {
+      "name": "Project Management",
+      "description": "Dedicated project management, timeline tracking, and client communication",
+      "category": "Services",
+      "unit_price": 1500
+    },
+    {
+      "name": "Creative Direction",
+      "description": "Senior creative oversight across all deliverables in the engagement",
+      "category": "Services",
+      "unit_price": 3000
+    }
+  ]
+}
