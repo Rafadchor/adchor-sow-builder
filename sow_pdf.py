@@ -39,7 +39,8 @@ HEADER_IMG = os.path.join(_DIR, 'assets', 'header.png')
 FOOTER_IMG = os.path.join(_DIR, 'assets', 'footer.png')
 
 # ── Fonts ─────────────────────────────────────────────────────────────────────
-POP_DIR = '/usr/share/fonts/truetype/google-fonts'
+# Fonts are bundled in assets/ so they work on both local VM and Streamlit Cloud
+_ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 REG  = 'Poppins'
 BOLD = 'Poppins-Bold'
 SEMI = 'Poppins-Medium'
@@ -47,7 +48,7 @@ SEMI = 'Poppins-Medium'
 def _setup_fonts():
     try:
         for name, fname in [(REG, 'Poppins-Regular.ttf'), (BOLD, 'Poppins-Bold.ttf'), (SEMI, 'Poppins-Medium.ttf')]:
-            pdfmetrics.registerFont(TTFont(name, os.path.join(POP_DIR, fname)))
+            pdfmetrics.registerFont(TTFont(name, os.path.join(_ASSETS, fname)))
     except Exception:
         pass  # Fall back to Helvetica if fonts unavailable
 
