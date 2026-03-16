@@ -403,114 +403,164 @@ elif st.session_state.step == 2:
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 3:
     st.markdown('<div class="sec-bar">STEP 3 — INVESTMENT & PRICING</div>', unsafe_allow_html=True)
-    st.caption("Build the pricing table. New items auto-save to your library for future SOWs.")
+    st.caption("Price the services from your SOW. Click any service below to add it, then set the price and quantity.")
 
     library   = st.session_state.pricing_library
     lib_items = library.get("items", [])
     items     = st.session_state.pricing_items
+    sow       = st.session_state.sow_data
 
-    col_table, col_add = st.columns([3, 1])
-
-    # ── Add Panel ─────────────────────────────────────────────────────────────
-    with col_add:
-        st.markdown("#### Add from Library")
-        if lib_items:
-            lib_labels = [f"{it['name']}" for it in lib_items]
-            sel = st.selectbox("Service", ["— Select —"] + lib_labels, label_visibility="collapsed")
-            if sel != "— Select —" and st.button("Add ➕", use_container_width=True):
-                idx = lib_labels.index(sel)
-                new = lib_items[idx].copy()
-                new["qty"] = 1
-                new["total"] = new["unit_price"]
-                items.append(new)
-                st.session_state.pricing_items = items
-                st.rerun()
-        else:
-            st.info("Library is empty — add items below.")
-
+    # ── Section A: Services from your SOW ─────────────────────────────────────
+    scope_sections = sow.get("scope_sections", [])
+    if scope_sections:
+        st.markdown("##### Services from your SOW")
+        st.caption("Click a service to add it as a line item below.")
+        sow_cols = st.columns(3)
+        for i, sec in enumerate(scope_sections):
+            title = sec.get("title", "").strip()
+            desc  = sec.get("description", "")[:80] + "…" if len(sec.get("description","")) > 80 else sec.get("description","")
+            if not title:
+                continue
+            with sow_cols[i % 3]:
+                st.markdown(f"""
+                <div style="background:#1a1d24;border:1px solid #2a2d3a;border-left:4px solid #014bf7;
+                    border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+                    <div style="color:white;font-weight:700;font-size:13px;">{title}</div>
+                    <div style="color:#9aa0b0;font-size:11px;margin-top:4px;">{desc}</div>
+                </div>""", unsafe_allow_html=True)
+                if st.button(f"+ Add to pricing", key=f"sow_add_{i}", use_container_width=True):
+                    items.append({
+                        "name":        title,
+                        "description": sec.get("description","")[:100],
+                        "category":    "SOW Service",
+                        "unit_price":  0,
+                        "qty":         1,
+                        "total":       0,
+                    })
+                    st.session_state.pricing_items = items
+                    st.rerun()
         st.divider()
-        st.markdown("#### New Line Item")
-        new_name  = st.text_input("Service Name",  key="new_name")
-        new_desc  = st.text_input("Description",   key="new_desc")
-        new_cat   = st.text_input("Category",      key="new_cat")
-        new_price = st.number_input("Unit Price ($)", min_value=0, step=250, key="new_price")
 
-        if st.button("Add + Save to Library", use_container_width=True, type="primary"):
-            if new_name.strip():
-                entry = {
-                    "name":       new_name.strip(),
-                    "description": new_desc.strip(),
-                    "category":   new_cat.strip(),
-                    "unit_price": new_price,
-                    "qty":        1,
-                    "total":      new_price,
-                }
-                items.append(entry)
-                # Save to library if new
-                if not any(it["name"] == new_name.strip() for it in lib_items):
-                    lib_items.append({k: v for k, v in entry.items() if k not in ("qty", "total")})
-                    st.session_state.pricing_library["items"] = lib_items
-                st.session_state.pricing_items = items
-                st.rerun()
+    # ── Section B: Pricing Table ───────────────────────────────────────────────
+    st.markdown("##### Line Items")
 
-    # ── Line Items Table ──────────────────────────────────────────────────────
-    with col_table:
-        st.markdown("#### SOW Line Items")
+    if not items:
+        st.info("No items yet — click a service above or use '+ Add Row' below.")
+    else:
+        # Table header
+        h1, h2, h3, h4, h5, h6 = st.columns([3, 3, 1, 1.5, 1.5, 0.4])
+        for col, hdr in zip([h1,h2,h3,h4,h5,h6], ["Service","Description","Qty","Unit Price ($)","Total",""]):
+            col.markdown(f"<span style='font-size:11px;font-weight:700;color:#9aa0b0;text-transform:uppercase;'>{hdr}</span>",
+                         unsafe_allow_html=True)
+        st.markdown("<hr style='margin:4px 0 8px;border-color:#2a2d3a;'>", unsafe_allow_html=True)
 
-        if not items:
-            st.info("No items yet — pick from the library or add a new item →")
-        else:
-            # Header
-            h1, h2, h3, h4, h5, h6 = st.columns([3, 2, 1, 1.2, 1.2, 0.5])
-            for col, hdr in zip([h1, h2, h3, h4, h5, h6],
-                                ["Service", "Description", "Qty", "Unit Price ($)", "Total", ""]):
-                col.markdown(f"**{hdr}**")
-            st.divider()
+        to_remove = []
+        for i, item in enumerate(items):
+            c1, c2, c3, c4, c5, c6 = st.columns([3, 3, 1, 1.5, 1.5, 0.4])
+            item["name"]        = c1.text_input("", value=item.get("name",""),        key=f"n_{i}", label_visibility="collapsed", placeholder="Service name")
+            item["description"] = c2.text_input("", value=item.get("description",""), key=f"d_{i}", label_visibility="collapsed", placeholder="Brief description")
 
-            to_remove = []
-            for i, item in enumerate(items):
-                c1, c2, c3, c4, c5, c6 = st.columns([3, 2, 1, 1.2, 1.2, 0.5])
-                item["name"]        = c1.text_input("", value=item.get("name", ""),        key=f"n_{i}", label_visibility="collapsed")
-                item["description"] = c2.text_input("", value=item.get("description", ""), key=f"d_{i}", label_visibility="collapsed")
-                item["qty"]         = c3.number_input("", value=int(item.get("qty", 1)), min_value=1, key=f"q_{i}", label_visibility="collapsed")
-                item["unit_price"]  = c4.number_input("", value=float(item.get("unit_price", 0)), min_value=0.0, step=250.0, key=f"p_{i}", label_visibility="collapsed")
-                item["total"]       = item["qty"] * item["unit_price"]
-                c5.markdown(f"**${item['total']:,.0f}**")
-                if c6.button("✕", key=f"del_{i}"):
-                    to_remove.append(i)
+            # Qty — plain text input, parse to int
+            qty_raw = c3.text_input("", value=str(item.get("qty", 1)), key=f"q_{i}", label_visibility="collapsed")
+            try:
+                item["qty"] = max(1, int(qty_raw))
+            except ValueError:
+                item["qty"] = 1
 
-            for idx in sorted(to_remove, reverse=True):
-                items.pop(idx)
-            if to_remove:
-                st.session_state.pricing_items = items
-                st.rerun()
+            # Unit price — plain text input with $ hint, parse to float
+            price_raw = c4.text_input("", value=str(item.get("unit_price", "")), key=f"p_{i}",
+                                      label_visibility="collapsed", placeholder="0")
+            try:
+                item["unit_price"] = float(str(price_raw).replace(",","").replace("$","").strip()) if price_raw else 0.0
+            except ValueError:
+                item["unit_price"] = 0.0
 
-            st.divider()
+            item["total"] = item["qty"] * item["unit_price"]
+            c5.markdown(f"<div style='padding-top:8px;font-weight:700;color:white;'>${item['total']:,.0f}</div>",
+                        unsafe_allow_html=True)
+            if c6.button("✕", key=f"del_{i}"):
+                to_remove.append(i)
 
-            subtotal = sum(i.get("total", 0) for i in items)
-            discount = st.number_input("Discount ($)", min_value=0, step=250, value=int(st.session_state.sow_discount))
-            st.session_state.sow_discount = discount
-            final_total = subtotal - discount
-            st.session_state.sow_total = final_total
-
-            disc_line = f'<div class="sub">Discount: -${discount:,.0f}</div>' if discount else ""
-            st.markdown(f"""
-            <div class="pricing-total">
-                <div class="sub">Subtotal: ${subtotal:,.0f}</div>
-                {disc_line}
-                Total Investment: ${final_total:,.0f}
-            </div>""", unsafe_allow_html=True)
-
+        for idx in sorted(to_remove, reverse=True):
+            items.pop(idx)
+        if to_remove:
             st.session_state.pricing_items = items
+            st.rerun()
+
+        st.session_state.pricing_items = items
+
+    # ── Add Row button ─────────────────────────────────────────────────────────
+    if st.button("＋ Add Row", use_container_width=False):
+        items.append({"name":"","description":"","category":"","unit_price":0,"qty":1,"total":0})
+        st.session_state.pricing_items = items
+        st.rerun()
+
+    st.divider()
+
+    # ── Section C: Totals ──────────────────────────────────────────────────────
+    subtotal = sum(i.get("total", 0) for i in items)
+    tc1, tc2 = st.columns([3, 1])
+    with tc2:
+        disc_raw = st.text_input("Discount ($)", value=str(int(st.session_state.sow_discount)) if st.session_state.sow_discount else "", placeholder="0", key="disc_input")
+        try:
+            discount = float(str(disc_raw).replace(",","").replace("$","").strip()) if disc_raw else 0.0
+        except ValueError:
+            discount = 0.0
+        st.session_state.sow_discount = discount
+        final_total = subtotal - discount
+        st.session_state.sow_total = final_total
+
+        disc_line = f'<div class="sub">Discount: -${discount:,.0f}</div>' if discount else ""
+        st.markdown(f"""
+        <div class="pricing-total">
+            <div class="sub">Subtotal: ${subtotal:,.0f}</div>
+            {disc_line}
+            Total Investment: ${final_total:,.0f}
+        </div>""", unsafe_allow_html=True)
+
+    # ── Section D: Library (collapsed) ────────────────────────────────────────
+    with st.expander("📚 Add from Service Library or save new item"):
+        lib_col1, lib_col2 = st.columns(2)
+        with lib_col1:
+            st.markdown("**Quick-add from library**")
+            if lib_items:
+                lib_labels = [it["name"] for it in lib_items]
+                sel = st.selectbox("Pick a service", ["— Select —"] + lib_labels, key="lib_sel", label_visibility="collapsed")
+                if sel != "— Select —" and st.button("Add to pricing ➕", use_container_width=True):
+                    idx = lib_labels.index(sel)
+                    new = lib_items[idx].copy()
+                    new["qty"] = 1
+                    new["total"] = new["unit_price"]
+                    items.append(new)
+                    st.session_state.pricing_items = items
+                    st.rerun()
+            else:
+                st.info("Library is empty.")
+        with lib_col2:
+            st.markdown("**Save a new item to library**")
+            save_name  = st.text_input("Service Name", key="save_name")
+            save_desc  = st.text_input("Description",  key="save_desc")
+            save_cat   = st.text_input("Category",     key="save_cat")
+            save_price_raw = st.text_input("Default Price ($)", key="save_price", placeholder="0")
+            try:
+                save_price = float(save_price_raw.replace(",","").replace("$","").strip()) if save_price_raw else 0.0
+            except ValueError:
+                save_price = 0.0
+            if st.button("Save to Library", use_container_width=True):
+                if save_name.strip():
+                    entry = {"name": save_name.strip(), "description": save_desc.strip(),
+                             "category": save_cat.strip(), "unit_price": save_price}
+                    if not any(it["name"] == entry["name"] for it in lib_items):
+                        lib_items.append(entry)
+                        st.session_state.pricing_library["items"] = lib_items
+                        st.success(f"'{save_name}' saved to library.")
 
         st.divider()
-        # Download library for GitHub commit
         st.download_button(
-            "⬇ Download Pricing Library (save to GitHub)",
+            "⬇ Download Pricing Library (commit to GitHub to persist)",
             data=json.dumps(st.session_state.pricing_library, indent=2),
             file_name="pricing_library.json",
             mime="application/json",
-            help="Download the updated library and commit to your GitHub repo to persist new items.",
         )
 
     st.divider()
