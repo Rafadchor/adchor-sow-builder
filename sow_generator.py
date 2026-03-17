@@ -138,4 +138,3 @@ def get_empty_sow() -> dict:
         "out_of_scope": [],
         "adchor_notes": "",
     }
-
