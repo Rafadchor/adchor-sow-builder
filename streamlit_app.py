@@ -1,8 +1,7 @@
-import importlib, sys, os
+import runpy, os
 
-# Force re-execution of app modules on every Streamlit rerun
-for _mod in ['app', 'brief_extractor', 'sow_generator', 'sow_pdf']:
-    if _mod in sys.modules:
-        del sys.modules[_mod]
-
-from app import *
+# Always re-execute app.py fresh — bypasses Python module cache entirely
+runpy.run_path(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "app.py"),
+    run_name="__main__"
+)
