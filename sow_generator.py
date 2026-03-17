@@ -138,11 +138,15 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
         "Be specific -- use actual project details, not placeholders."
     )
 
+    # Final safety sweep — strip any non-ASCII that survived earlier processing
+    _safe_system = _safe_text(SYSTEM_PROMPT)
+    _safe_prompt = _safe_text(prompt)
+
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4000,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}]
+        system=_safe_system,
+        messages=[{"role": "user", "content": _safe_prompt}]
     )
 
     response_text = message.content[0].text.strip()
