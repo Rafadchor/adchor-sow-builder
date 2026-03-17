@@ -18,7 +18,6 @@ from datetime import datetime
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Adchor SOW Builder",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -26,88 +25,228 @@ st.set_page_config(
 # ── Adchor Brand CSS ──────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+
 /* ── Global ── */
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+html, body, [class*="css"],
+.stMarkdown, .stTextInput, .stTextArea,
+.stSelectbox, .stButton, .stNumberInput,
+.stFileUploader, p, span, div, label {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* ── App background ── */
+.stApp { background: #0a0c12 !important; }
+[data-testid="stAppViewBlockContainer"] { background: #0a0c12; }
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: #000000 !important;
+    border-right: 1px solid #1a1d2e !important;
+}
+[data-testid="stSidebar"] > div { padding-top: 24px !important; }
 
 /* ── Sidebar header ── */
-.adchor-header {
-    background: linear-gradient(135deg, #021de0 0%, #014bf7 100%);
-    padding: 16px 20px 14px;
-    border-radius: 10px;
-    border-bottom: 3px solid #00ff79;
-    margin-bottom: 4px;
+.adchor-header { padding: 0 0 20px; border-bottom: 1px solid #1a1d2e; margin-bottom: 16px; }
+.adchor-logomark {
+    display: inline-block;
+    background: #014bf7;
+    color: white;
+    font-size: 15px;
+    font-weight: 900;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 34px;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 20px rgba(1,75,247,0.5);
 }
-.adchor-header h2 { color: white; font-size: 18px; margin: 0 0 2px; font-weight: 800; letter-spacing: 1px; }
-.adchor-header p  { color: rgba(255,255,255,0.65); font-size: 11px; margin: 0; }
+.adchor-wordmark {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin: 0; line-height: 1;
+}
+.adchor-subtext {
+    color: #14a4fe;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 4px 0 0;
+}
 
 /* ── Step pills ── */
-.step-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
-.pill { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-.pill-done    { background: #00ff79; color: #2f3234; }
-.pill-active  { background: #014bf7; color: white; }
-.pill-pending { background: #F4F6FB; color: #595959; border: 1px solid #D5DAE8; }
-
-/* ── Section headers ── */
-.sec-bar {
-    background: #021de0;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 6px;
+.step-row { display: flex; flex-direction: column; gap: 5px; margin: 4px 0; }
+.pill {
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 11px;
     font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    border-left: 5px solid #00ff79;
-    margin: 14px 0 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+}
+.pill-done    { background: rgba(0,255,121,0.08); color: #00ff79; border: 1px solid rgba(0,255,121,0.25); }
+.pill-active  { background: #014bf7; color: white; border: 1px solid #014bf7; box-shadow: 0 4px 14px rgba(1,75,247,0.4); }
+.pill-pending { background: transparent; color: #3a3f52; border: 1px solid #1a1d2e; }
+
+/* ── Section header bar ── */
+.sec-bar {
+    background: linear-gradient(90deg, #014bf7 0%, #021de0 100%);
+    color: white;
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin: 0 0 18px;
+    box-shadow: 0 6px 24px rgba(1,75,247,0.3);
 }
 
-/* ── Scope block ── */
+/* ── Scope block header ── */
 .scope-header {
-    background: #021de0;
+    background: #014bf7;
     color: white;
-    padding: 10px 16px;
-    border-radius: 6px 6px 0 0;
+    padding: 11px 18px;
+    border-radius: 8px 8px 0 0;
     font-weight: 700;
-    font-size: 13px;
-    border-left: 5px solid #00ff79;
-    margin-top: 12px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 14px;
+    box-shadow: 0 4px 12px rgba(1,75,247,0.25);
 }
 
 /* ── Pricing total ── */
 .pricing-total {
-    background: #021de0;
+    background: linear-gradient(135deg, #021de0 0%, #014bf7 100%);
     color: white;
-    padding: 14px 20px;
-    border-radius: 8px;
+    padding: 18px 22px;
+    border-radius: 12px;
     text-align: right;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
-    margin-top: 10px;
-    border-left: 5px solid #00ff79;
+    margin-top: 14px;
+    box-shadow: 0 8px 28px rgba(1,75,247,0.35);
+    border: 1px solid rgba(20,164,254,0.3);
+    letter-spacing: -0.5px;
 }
-.pricing-total .sub { font-size: 12px; opacity: 0.65; font-weight: 400; }
+.pricing-total .sub { font-size: 12px; opacity: 0.65; font-weight: 500; letter-spacing: 0; }
 
 /* ── Info box ── */
 .info-box {
-    background: #EEF3FF;
-    border: 1.5px solid #014bf7;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin: 6px 0 12px;
-    border-left: 5px solid #014bf7;
+    background: #0f111a;
+    border: 1px solid #1e2235;
+    border-left: 4px solid #014bf7;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 8px 0 14px;
     font-size: 13px;
-    color: #2f3234;
+    color: #c8ccd8;
 }
 
-/* ── Download cta ── */
+/* ── Download CTA ── */
 .dl-note {
-    background: #F0FFF7;
-    border: 1px solid #00cc62;
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin-top: 12px;
+    background: rgba(0,255,121,0.05);
+    border: 1px solid rgba(0,255,121,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
     font-size: 13px;
-    color: #2f3234;
+    color: #c8ccd8;
 }
+
+/* ── Input fields ── */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stNumberInput > div > div > input {
+    background: #0f111a !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+    color: #e8eaf0 !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 13px !important;
+}
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: #014bf7 !important;
+    box-shadow: 0 0 0 2px rgba(1,75,247,0.15) !important;
+}
+
+/* ── Buttons ── */
+.stButton > button {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s !important;
+}
+.stButton > button[kind="primary"] {
+    background: #014bf7 !important;
+    border: none !important;
+    box-shadow: 0 4px 16px rgba(1,75,247,0.4) !important;
+}
+.stButton > button[kind="primary"]:hover {
+    background: #0240d4 !important;
+    box-shadow: 0 6px 22px rgba(1,75,247,0.6) !important;
+    transform: translateY(-1px) !important;
+}
+.stButton > button[kind="secondary"] {
+    background: transparent !important;
+    border: 1px solid #1e2235 !important;
+    color: #9aa0b4 !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    border-color: #014bf7 !important;
+    color: white !important;
+}
+
+/* ── File uploader ── */
+[data-testid="stFileUploader"] {
+    background: #0f111a !important;
+    border: 1.5px dashed #1e2235 !important;
+    border-radius: 10px !important;
+}
+[data-testid="stFileUploader"]:hover {
+    border-color: #014bf7 !important;
+}
+
+/* ── Dividers ── */
+hr { border-color: #1a1d2e !important; margin: 16px 0 !important; }
+
+/* ── Success/warning/error ── */
+.stSuccess { background: rgba(0,255,121,0.08) !important; border-color: rgba(0,255,121,0.3) !important; color: #00ff79 !important; }
+.stAlert { border-radius: 8px !important; }
+
+/* ── Expander ── */
+[data-testid="stExpander"] {
+    background: #0f111a !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 10px !important;
+}
+
+/* ── Selectbox ── */
+[data-testid="stSelectbox"] > div > div {
+    background: #0f111a !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+    color: #e8eaf0 !important;
+}
+
+/* ── Caption/small text ── */
+.stCaption { color: #5a6278 !important; font-size: 12px !important; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #0a0c12; }
+::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #014bf7; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -139,8 +278,9 @@ for k, v in defaults.items():
 with st.sidebar:
     st.markdown("""
     <div class="adchor-header">
-        <h2>⚡ ADCHOR</h2>
-        <p>SOW Builder · Powered by Claude AI</p>
+        <div class="adchor-logomark">⚡</div>
+        <div class="adchor-wordmark">ADCHOR</div>
+        <div class="adchor-subtext">SOW Builder &nbsp;·&nbsp; Claude AI</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -181,7 +321,7 @@ with st.sidebar:
             st.session_state[k] = defaults[k]
         st.rerun()
 
-    st.caption("Adchor · 2026")
+    st.markdown("<div style='margin-top:12px;color:#2a2d3e;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;'>Adchor™ · 2026</div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
