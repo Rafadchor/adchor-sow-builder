@@ -3,8 +3,41 @@ Generate SOW content using Anthropic Claude.
 Takes extracted brief fields + call transcript → returns structured SOW dict.
 """
 import json
+import unicodedata
 import anthropic
 from brief_extractor import format_for_prompt
+
+
+def _safe_text(text: str) -> str:
+    """
+    Normalize unicode text to ASCII-safe form before sending to the API.
+    Converts common smart quotes, dashes, symbols to plain equivalents.
+    Unknown non-ASCII chars are dropped rather than crashing.
+    """
+    if not text:
+        return text
+    # Decompose + recompose unicode (NFC normalisation)
+    text = unicodedata.normalize('NFKC', text)
+    # Common substitutions that matter in agency/business copy
+    _subs = {
+        '\u00d7': 'x',    # × multiplication sign
+        '\u00f7': '/',    # ÷ division sign
+        '\u2013': '-',    # – en dash
+        '\u2014': '--',   # — em dash
+        '\u2018': "'",    # ' left single quote
+        '\u2019': "'",    # ' right single quote
+        '\u201c': '"',    # " left double quote
+        '\u201d': '"',    # " right double quote
+        '\u2026': '...',  # … ellipsis
+        '\u00a0': ' ',    # non-breaking space
+        '\u00ae': '(R)',  # ® registered
+        '\u2122': '(TM)', # ™ trademark
+        '\u00a9': '(C)',  # © copyright
+    }
+    for char, sub in _subs.items():
+        text = text.replace(char, sub)
+    # Final safety net: encode to UTF-8 bytes then decode, replacing anything left
+    return text.encode('utf-8', errors='replace').decode('utf-8')
 
 SYSTEM_PROMPT = """You are a senior strategist and account lead at Adchor, a creative agency built around the Transformative Acceleration Blueprint — a three-phase methodology:
 
@@ -28,8 +61,8 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
     """
     client = anthropic.Anthropic(api_key=api_key)
 
-    brief_text = format_for_prompt(brief_fields) if brief_fields else "No brief data provided."
-    transcript_text = transcript.strip() if transcript else "No transcript provided."
+    brief_text = _safe_text(format_for_prompt(brief_fields)) if brief_fields else "No brief data provided."
+    transcript_text = _safe_text(transcript.strip()) if transcript else "No transcript provided."
 
     prompt = f"""Generate a complete SOW from the following inputs:
 
