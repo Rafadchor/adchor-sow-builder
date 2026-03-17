@@ -1,6 +1,6 @@
 """
 Generate SOW content using Anthropic Claude.
-Takes extracted brief fields + call transcript → returns structured SOW dict.
+Takes extracted brief fields + call transcript -> returns structured SOW dict.
 """
 import json
 import unicodedata
@@ -11,35 +11,38 @@ from brief_extractor import format_for_prompt
 def _safe_text(text: str) -> str:
     """
     Normalize unicode text to ASCII-safe form before sending to the API.
-    Converts common smart quotes, dashes, symbols to plain equivalents.
+    Converts common smart quotes, dashes, symbols to plain ASCII equivalents.
     Unknown non-ASCII chars are dropped rather than crashing.
     """
     if not text:
         return text
-    # Decompose + recompose unicode (NFC normalisation)
     text = unicodedata.normalize('NFKC', text)
-    # Common substitutions that matter in agency/business copy
     _subs = {
-        '\u00d7': 'x',    # × multiplication sign
-        '\u00f7': '/',    # ÷ division sign
-        '\u2013': '-',    # – en dash
-        '\u2014': '--',   # — em dash
-        '\u2018': "'",    # ' left single quote
-        '\u2019': "'",    # ' right single quote
-        '\u201c': '"',    # " left double quote
-        '\u201d': '"',    # " right double quote
-        '\u2026': '...',  # … ellipsis
-        '\u00a0': ' ',    # non-breaking space
-        '\u00ae': '(R)',  # ® registered
-        '\u2122': '(TM)', # ™ trademark
-        '\u00a9': '(C)',  # © copyright
+        '\u00d7': 'x',
+        '\u00f7': '/',
+        '\u2013': '-',
+        '\u2014': '--',
+        '\u2018': "'",
+        '\u2019': "'",
+        '\u201c': '"',
+        '\u201d': '"',
+        '\u2026': '...',
+        '\u00a0': ' ',
+        '\u00ae': '(R)',
+        '\u2122': '(TM)',
+        '\u00a9': '(C)',
+        '\u2192': '->',
+        '\u2190': '<-',
+        '\u2022': '-',
+        '\u00b7': '-',
     }
     for char, sub in _subs.items():
         text = text.replace(char, sub)
-    # Final safety net: encode to UTF-8 bytes then decode, replacing anything left
-    return text.encode('utf-8', errors='replace').decode('utf-8')
+    # Final safety net: drop any remaining non-ASCII
+    return text.encode('ascii', errors='ignore').decode('ascii')
 
-SYSTEM_PROMPT = """You are a senior strategist and account lead at Adchor, a creative agency built around the Transformative Acceleration Blueprint — a three-phase methodology:
+
+SYSTEM_PROMPT = """You are a senior strategist and account lead at Adchor, a creative agency built around the Transformative Acceleration Blueprint -- a three-phase methodology:
 
 - TARGET PHASE: Audience, positioning, competitive differentiation, strategic foundation
 - BUILD PHASE: Creative development, messaging architecture, production
@@ -47,9 +50,9 @@ SYSTEM_PROMPT = """You are a senior strategist and account lead at Adchor, a cre
 
 Your task is to draft a professional, client-ready Statement of Work based on data from a filled creative brief and/or a call transcript. Your output must be:
 - Specific to this client and project (never generic)
-- Written in confident agency voice — clear, direct, professional
+- Written in confident agency voice -- clear, direct, professional
 - Structured for editing before sending
-- Realistic about scope — do not over-promise
+- Realistic about scope -- do not over-promise
 
 Output ONLY valid JSON. No markdown fences, no explanation text."""
 
@@ -82,16 +85,16 @@ Return ONLY this JSON (no markdown, no explanation):
     "budget_range": "budget from brief",
     "version": "v1.0",
     "project_overview": "3-4 sentence executive summary. Open with the business opportunity or challenge. Close with what Adchor will deliver and why it matters now.",
-    "why_now": "1-2 sentences on the specific trigger — what changed, what window exists, what is at stake if this doesn't happen.",
+    "why_now": "1-2 sentences on the specific trigger -- what changed, what window exists, what is at stake if this doesn't happen.",
     "objective": "Primary objective, specific and measurable where possible.",
     "audience": "Specific audience description from the brief.",
     "core_message": "Core message if provided in brief.",
     "scope_sections": [
         {{
-            "title": "Specific, descriptive section title (e.g. 'Educational Animated Video — Primary Asset')",
+            "title": "Specific, descriptive section title (e.g. 'Educational Animated Video - Primary Asset')",
             "description": "2-3 sentences describing what Adchor will create, the strategic intent, and why this deliverable drives the objective.",
             "services": [
-                "Specific service included — be concrete, not generic",
+                "Specific service included -- be concrete, not generic",
                 "Another specific service",
                 "Another specific service",
                 "Another specific service"
@@ -118,7 +121,7 @@ Return ONLY this JSON (no markdown, no explanation):
     "adchor_notes": "Internal note: 1 sentence on the strategic angle Adchor should lean into for this project."
 }}
 
-Create one scope_section per major deliverable group. If the brief mentions multiple distinct deliverables (e.g. two videos + a social package), create separate sections for each. Be specific — use actual project details, not placeholders."""
+Create one scope_section per major deliverable group. If the brief mentions multiple distinct deliverables (e.g. two videos + a social package), create separate sections for each. Be specific -- use actual project details, not placeholders."""
 
     message = client.messages.create(
         model="claude-sonnet-4-6",
