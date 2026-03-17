@@ -4,7 +4,7 @@ Takes extracted brief fields + call transcript -> returns structured SOW dict.
 """
 import json
 import unicodedata
-import anthropic
+import requests as _requests
 from brief_extractor import format_for_prompt
 
 
@@ -78,8 +78,6 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
     Call Claude to generate structured SOW content.
     Returns a dict with all sections needed to build the SOW PDF.
     """
-    client = anthropic.Anthropic(api_key=api_key)
-
     brief_text = _safe_text(format_for_prompt(brief_fields)) if brief_fields else "No brief data provided."
     transcript_text = _safe_text(transcript.strip()) if transcript else "No transcript provided."
 
@@ -142,14 +140,24 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
     _safe_system = _safe_text(SYSTEM_PROMPT)
     _safe_prompt = _safe_text(prompt)
 
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4000,
-        system=_safe_system,
-        messages=[{"role": "user", "content": _safe_prompt}]
+    # Use requests directly -- bypasses h11 ASCII encoding limitation
+    resp = _requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        json={
+            "model": "claude-sonnet-4-6",
+            "max_tokens": 4000,
+            "system": _safe_system,
+            "messages": [{"role": "user", "content": _safe_prompt}],
+        },
+        timeout=120,
     )
-
-    response_text = message.content[0].text.strip()
+    resp.raise_for_status()
+    response_text = resp.json()["content"][0]["text"].strip()
 
     start = response_text.find('{')
     end = response_text.rfind('}') + 1
