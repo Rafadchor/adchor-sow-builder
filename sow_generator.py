@@ -144,7 +144,7 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
     resp = _requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={
-            "x-api-key": api_key,
+            "x-api-key": str(api_key).strip(),
             "anthropic-version": "2023-06-01",
             "content-type": "application/json",
         },
@@ -156,7 +156,8 @@ def generate_sow_content(brief_fields: dict, transcript: str, api_key: str) -> d
         },
         timeout=120,
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise Exception(f"Anthropic API error {resp.status_code}: {resp.text[:500]}")
     response_text = resp.json()["content"][0]["text"].strip()
 
     start = response_text.find('{')
