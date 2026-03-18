@@ -6,7 +6,7 @@ Flow:
   Step 1 -- Upload filled creative brief PDF + call transcript
   Step 2 -- Review & edit AI-generated SOW content
   Step 3 -- Build pricing (live auto-total, growing library)
-  Step 4 -- Download PDF â send via Adobe Sign
+  Step 4 -- Download PDF → send via Adobe Sign
 """
 import streamlit as st
 import json
@@ -16,30 +16,30 @@ import base64
 from pathlib import Path
 from datetime import datetime
 
-# ââ Ensure app directory is always in sys.path ââââââââââââââââââââââââââââââââ
+# ── Ensure app directory is always in sys.path ────────────────────────────────
 _APP_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd()
 if _APP_DIR not in sys.path:
     sys.path.insert(0, _APP_DIR)
 
-# ââ Import all app modules upfront (no lazy imports -- prevents runpy issues) ââ
+# ── Import all app modules upfront (no lazy imports -- prevents runpy issues) ──
 from brief_extractor import extract_brief_fields, format_for_prompt
 from sow_generator import generate_sow_content, get_empty_sow
 from sow_pdf import build_sow_pdf
 
-# ââ Page Config âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Adchor SOW Builder",
-    page_icon="â¡",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ââ Adchor Brand CSS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Adchor Brand CSS ──────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ââ Global ââ */
+/* ── Global ── */
 html, body, [class*="css"],
 .stMarkdown, .stTextInput, .stTextArea,
 .stSelectbox, .stButton, .stNumberInput,
@@ -52,18 +52,18 @@ html, body, [class*="css"],
     font-family: 'Material Symbols Rounded', 'Material Icons', 'Material Icons Round' !important;
 }
 
-/* ââ App background ââ */
+/* ── App background ── */
 .stApp { background: #0a0c12 !important; }
 [data-testid="stAppViewBlockContainer"] { background: #0a0c12; }
 
-/* ââ Sidebar ââ */
+/* ── Sidebar ── */
 [data-testid="stSidebar"] {
     background: #000000 !important;
     border-right: 1px solid #1a1d2e !important;
 }
 [data-testid="stSidebar"] > div { padding-top: 24px !important; }
 
-/* ââ Sidebar header ââ */
+/* ── Sidebar header ── */
 .adchor-header { padding: 0 0 20px; border-bottom: 1px solid #1a1d2e; margin-bottom: 16px; }
 .adchor-logomark {
     display: inline-block;
@@ -96,7 +96,7 @@ html, body, [class*="css"],
     margin: 4px 0 0;
 }
 
-/* ââ Step pills ââ */
+/* ── Step pills ── */
 .step-row { display: flex; flex-direction: column; gap: 5px; margin: 4px 0; }
 .pill {
     padding: 9px 14px;
@@ -112,7 +112,7 @@ html, body, [class*="css"],
 .pill-active  { background: #014bf7; color: white; border: 1px solid #014bf7; box-shadow: 0 4px 14px rgba(1,75,247,0.4); }
 .pill-pending { background: transparent; color: #3a3f52; border: 1px solid #1a1d2e; }
 
-/* ââ Section header bar ââ */
+/* ── Section header bar ── */
 .sec-bar {
     background: linear-gradient(90deg, #014bf7 0%, #021de0 100%);
     color: white;
@@ -126,7 +126,7 @@ html, body, [class*="css"],
     box-shadow: 0 6px 24px rgba(1,75,247,0.3);
 }
 
-/* ââ Scope block header ââ */
+/* ── Scope block header ── */
 .scope-header {
     background: #014bf7;
     color: white;
@@ -140,7 +140,7 @@ html, body, [class*="css"],
     box-shadow: 0 4px 12px rgba(1,75,247,0.25);
 }
 
-/* ââ Pricing total ââ */
+/* ── Pricing total ── */
 .pricing-total {
     background: linear-gradient(135deg, #021de0 0%, #014bf7 100%);
     color: white;
@@ -156,7 +156,7 @@ html, body, [class*="css"],
 }
 .pricing-total .sub { font-size: 12px; opacity: 0.65; font-weight: 500; letter-spacing: 0; }
 
-/* ââ Info box ââ */
+/* ── Info box ── */
 .info-box {
     background: #0f111a;
     border: 1px solid #1e2235;
@@ -168,7 +168,7 @@ html, body, [class*="css"],
     color: #c8ccd8;
 }
 
-/* ââ Download CTA ââ */
+/* ── Download CTA ── */
 .dl-note {
     background: rgba(0,255,121,0.05);
     border: 1px solid rgba(0,255,121,0.2);
@@ -179,7 +179,7 @@ html, body, [class*="css"],
     color: #c8ccd8;
 }
 
-/* ââ AI reword box ââ */
+/* ── AI reword box ── */
 .ai-box {
     background: #0d0f1a;
     border: 1px solid #1e2540;
@@ -194,7 +194,7 @@ html, body, [class*="css"],
     line-height: 1.6;
 }
 
-/* ââ Input fields ââ */
+/* ── Input fields ── */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
 .stNumberInput > div > div > input {
@@ -211,7 +211,7 @@ html, body, [class*="css"],
     box-shadow: 0 0 0 2px rgba(1,75,247,0.15) !important;
 }
 
-/* ââ Buttons ââ */
+/* ── Buttons ── */
 .stButton > button {
     font-family: 'Montserrat', sans-serif !important;
     font-weight: 700 !important;
@@ -239,7 +239,7 @@ html, body, [class*="css"],
     color: white !important;
 }
 
-/* ââ File uploader ââ */
+/* ── File uploader ── */
 [data-testid="stFileUploader"] {
     background: #0f111a !important;
     border: 1.5px dashed #1e2235 !important;
@@ -249,21 +249,21 @@ html, body, [class*="css"],
     border-color: #014bf7 !important;
 }
 
-/* ââ Dividers ââ */
+/* ── Dividers ── */
 hr { border-color: #1a1d2e !important; margin: 16px 0 !important; }
 
-/* ââ Success/warning/error ââ */
+/* ── Success/warning/error ── */
 .stSuccess { background: rgba(0,255,121,0.08) !important; border-color: rgba(0,255,121,0.3) !important; color: #00ff79 !important; }
 .stAlert { border-radius: 8px !important; }
 
-/* ââ Expander ââ */
+/* ── Expander ── */
 [data-testid="stExpander"] {
     background: #0f111a !important;
     border: 1px solid #1e2235 !important;
     border-radius: 10px !important;
 }
 
-/* ââ Selectbox ââ */
+/* ── Selectbox ── */
 [data-testid="stSelectbox"] > div > div {
     background: #0f111a !important;
     border: 1px solid #1e2235 !important;
@@ -271,10 +271,10 @@ hr { border-color: #1a1d2e !important; margin: 16px 0 !important; }
     color: #e8eaf0 !important;
 }
 
-/* ââ Caption/small text ââ */
+/* ── Caption/small text ── */
 .stCaption { color: #5a6278 !important; font-size: 12px !important; }
 
-/* ââ Scrollbar ââ */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #0a0c12; }
 ::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 4px; }
@@ -282,10 +282,10 @@ hr { border-color: #1a1d2e !important; margin: 16px 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ââ Base directory (works with both direct run and runpy) âââââââââââââââââââââ
+# ── Base directory (works with both direct run and runpy) ─────────────────────
 _BASE_DIR = Path(__file__).parent if "__file__" in dir() else Path(os.getcwd())
 
-# ââ Pricing Library (load once per session) âââââââââââââââââââââââââââââââââââââ
+# ── Pricing Library (load once per session) ───────────────────────────────────
 LIBRARY_PATH = _BASE_DIR / "pricing_library.json"
 
 def load_library():
@@ -295,9 +295,9 @@ def load_library():
     return {"items": []}
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 # NEW: AI Reword Helper
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 def _ai_reword(text: str, instruction: str, api_key: str) -> str:
     """Call Claude to reword/improve a piece of SOW text."""
     import anthropic
@@ -312,7 +312,7 @@ def _ai_reword(text: str, instruction: str, api_key: str) -> str:
                 "You write polished, client-facing statements of work.\n\n"
                 f"Task: {instruction}\n\n"
                 f"Text to improve:\n{text}\n\n"
-                "Return only the improved text â no preamble, no explanation, "
+                "Return only the improved text — no preamble, no explanation, "
                 "no markdown formatting, no code fences."
             ),
         }],
@@ -320,9 +320,9 @@ def _ai_reword(text: str, instruction: str, api_key: str) -> str:
     return msg.content[0].text.strip()
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 # NEW: Widget keys that must be cleared when resetting a SOW
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 _SOW_FIELD_WIDGET_KEYS = [
     "ta_why_now", "ta_project_overview", "ta_core_message",
     "ta_assumptions", "ta_out_of_scope", "ta_timeline_notes",
@@ -333,11 +333,11 @@ _AI_WIDGET_KEYS = [
 ]
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 # NEW: Centralised reset helper (used by sidebar + Done button)
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ════════════════════════════════════════════════════════════════════════════════
 def _reset_sow_state():
-    """Full SOW workflow reset â preserves pricing_library and api_key."""
+    """Full SOW workflow reset — preserves pricing_library and api_key."""
     reset_vals = {
         "step": 1,
         "brief_fields": {},
@@ -357,7 +357,7 @@ def _reset_sow_state():
     for k, v in reset_vals.items():
         st.session_state[k] = v
     # Clear SOW field widget state so they re-initialise with fresh sow_data
-    for k in _SOW_FIELD_WIDGET_KEYS + _AI_WIDGET_KEYS:
+    for k in _SOV_FIELD_WIDGET_KEYS + _AI_WIDGET_KEYS:
         st.session_state.pop(k, None)
     # Clear scope-section widget keys (support up to 30 sections)
     for i in range(30):
@@ -365,7 +365,7 @@ def _reset_sow_state():
             st.session_state.pop(k, None)
 
 
-# ââ Session State Init ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Session State Init ────────────────────────────────────────────────────────
 defaults = {
     "step": 1,
     "brief_fields": {},
@@ -375,7 +375,7 @@ defaults = {
     "sow_discount": 0,
     "sow_total": 0,
     "pricing_library": load_library(),
-    # ââ NEW keys ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── NEW keys ──────────────────────────────────────────────────────────────
     "pdf_downloaded": False,      # True only after the download button is clicked
     "ai_reword_result": "",       # Stores Claude's latest reword suggestion
     "ai_reword_target": "",       # sow field key that was targeted
@@ -387,7 +387,7 @@ for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ââ Sidebar âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     _logo_path = _BASE_DIR / 'assets' / 'logo.png'
     _logo_html = ""
@@ -406,7 +406,7 @@ with st.sidebar:
     pills_html = '<div class="step-row">'
     for i, lbl in enumerate(step_labels, 1):
         if i < st.session_state.step:
-            pills_html += f'<span class="pill pill-done">â {lbl}</span>'
+            pills_html += f'<span class="pill pill-done">✓ {lbl}</span>'
         elif i == st.session_state.step:
             pills_html += f'<span class="pill pill-active">{lbl}</span>'
         else:
@@ -430,22 +430,22 @@ with st.sidebar:
         st.markdown("""
         <div style="background:rgba(255,60,60,0.07);border:1px solid rgba(255,60,60,0.25);
             border-radius:8px;padding:10px 14px;font-size:11px;color:#ff6b6b;">
-            â  API key not configured.<br>
+            ⚠ API key not configured.<br>
             <span style="color:#5a6278;">Contact your Adchor admin.</span>
         </div>""", unsafe_allow_html=True)
     st.divider()
 
     # MODIFIED: use centralised reset helper
-    if st.button("âº Start New SOW", use_container_width=True):
+    if st.button("↺ Start New SOW", use_container_width=True):
         _reset_sow_state()
         st.rerun()
 
-    st.markdown("<div style='margin-top:12px;color:#2a2d3e;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;'>Adchorâ¢ Â· 2026</div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:12px;color:#2a2d3e;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;'>Adchor™ · 2026</div>", unsafe_allow_html=True)
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # STEP 1 -- INPUT  (unchanged)
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.step == 1:
     st.markdown('<div class="sec-bar">STEP 1 -- UPLOAD BRIEF & TRANSCRIPT</div>', unsafe_allow_html=True)
     st.caption("Upload the filled creative brief and paste the call transcript. Claude will extract everything and draft the SOW.")
@@ -464,7 +464,7 @@ if st.session_state.step == 1:
             if '_error' in fields:
                 st.error(f"Could not read PDF: {fields['_error']}")
             elif fields:
-                st.success(f"â {len(fields)} fields extracted from brief")
+                st.success(f"✓ {len(fields)} fields extracted from brief")
                 with st.expander("Preview extracted data"):
                     for k, v in fields.items():
                         if v:
@@ -488,7 +488,7 @@ if st.session_state.step == 1:
             tf = st.file_uploader("Upload .txt transcript", type=["txt"], label_visibility="collapsed")
             transcript = tf.read().decode("utf-8") if tf else ""
             if transcript:
-                st.success(f"â {len(transcript.split())} words loaded")
+                st.success(f"✓ {len(transcript.split())} words loaded")
         st.session_state.transcript = transcript
 
     st.divider()
@@ -502,7 +502,7 @@ if st.session_state.step == 1:
         has_input = bool(st.session_state.brief_fields or st.session_state.transcript)
         has_key   = bool(st.session_state.get("api_key"))
         disabled  = not has_input
-        if st.button("â¡ Generate SOW with Claude", use_container_width=True, type="primary", disabled=disabled):
+        if st.button("⚡ Generate SOW with Claude", use_container_width=True, type="primary", disabled=disabled):
             if not has_key:
                 st.error("AI generation is not available -- API key not configured. Contact your Adchor admin.")
             else:
@@ -525,16 +525,16 @@ if st.session_state.step == 1:
             st.caption("Upload a brief or paste a transcript to continue.")
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # STEP 2 -- REVIEW & EDIT CONTENT
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 2:
     st.markdown('<div class="sec-bar">STEP 2 -- REVIEW & EDIT SOW CONTENT</div>', unsafe_allow_html=True)
     st.caption("All fields are editable. Refine Claude's draft before moving to pricing.")
 
     sow = st.session_state.sow_data or {}
 
-    # ââ Client Details ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Client Details ────────────────────────────────────────────────────────
     with st.expander("Client & Project Details", expanded=True):
         c1, c2, c3 = st.columns(3)
         sow["client_name"]    = c1.text_input("Client Name",        value=sow.get("client_name", ""))
@@ -548,7 +548,7 @@ elif st.session_state.step == 2:
         sow["final_deadline"] = c7.text_input("Final Deadline",     value=sow.get("final_deadline", ""))
         sow["budget_range"]   = c8.text_input("Budget Range",       value=sow.get("budget_range", ""))
 
-    # ââ Strategic Summary âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Strategic Summary ─────────────────────────────────────────────────────
     # MODIFIED: explicit keys added to why_now, project_overview, core_message
     # so the AI Reword Apply button can force-update these widgets.
     with st.expander("Strategic Summary", expanded=True):
@@ -573,16 +573,16 @@ elif st.session_state.step == 2:
             help="One sentence that drives everything.",
         )
 
-    # ââ Scope Sections ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Scope Sections ────────────────────────────────────────────────────────
     st.markdown('<div class="sec-bar">SCOPE OF SERVICES</div>', unsafe_allow_html=True)
     st.caption("Each section becomes a collapsible block in the SOW. Add as many as needed.")
 
     sections = sow.get("scope_sections", [{"title": "", "description": "", "services": [], "deliverables": []}])
     for i, sec in enumerate(sections):
         label = sec.get("title") or f"Section {i + 1}"
-        with st.expander(f"â¾  {label}", expanded=(i == 0)):
+        with st.expander(f"▾  {label}", expanded=(i == 0)):
             sec["title"]       = st.text_input("Section Title", value=sec.get("title", ""),       key=f"st_{i}")
-            # key sd_{i} already existed; kept unchanged â Apply targets this key
+            # key sd_{i} already existed; kept unchanged — Apply targets this key
             sec["description"] = st.text_area("Description",   value=sec.get("description", ""), height=80, key=f"sd_{i}")
             c_svc, c_del = st.columns(2)
             with c_svc:
@@ -609,7 +609,7 @@ elif st.session_state.step == 2:
         st.rerun()
     sow["scope_sections"] = sections
 
-    # ââ Assumptions & Out of Scope ââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Assumptions & Out of Scope ────────────────────────────────────────────
     # MODIFIED: explicit keys added so Apply can force-update these widgets
     with st.expander("Assumptions & Out of Scope"):
         c_left, c_right = st.columns(2)
@@ -639,16 +639,16 @@ elif st.session_state.step == 2:
             value=sow.get("review_rounds", "2"),
         )
 
-    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ════════════════════════════════════════════════════════════════════════════
     # NEW: AI Reword Assistant
-    # ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-    with st.expander("â¦ AI Reword Assistant", expanded=False):
+    # ════════════════════════════════════════════════════════════════════════════
+    with st.expander("✦ AI Reword Assistant", expanded=False):
         st.caption(
             "Select a SOW field, load its content, ask Claude to improve it, "
             "then apply the result directly back into the field."
         )
 
-        # Build field map: label â (sow_field_key, widget_key, field_type)
+        # Build field map: label → (sow_field_key, widget_key, field_type)
         # field_type is "text" for strings or "list" for newline-separated lists
         field_map = {
             "Why This, Why Now":   ("why_now",         "ta_why_now",          "text"),
@@ -660,7 +660,7 @@ elif st.session_state.step == 2:
         }
         for _i, _sec in enumerate(sow.get("scope_sections", [])):
             _title = _sec.get("title") or f"Section {_i + 1}"
-            field_map[f"Scope: {_title} â Description"] = (
+            field_map[f"Scope: {_title} — Description"] = (
                 f"scope_{_i}_description", f"sd_{_i}", "text"
             )
 
@@ -674,7 +674,7 @@ elif st.session_state.step == 2:
         fkey, wkey, ftype = field_map[selected_label]
 
         # Resolve current value from the live sow dict (reflects latest edits
-        # made in this render pass â Step 2â3 sync source of truth)
+        # made in this render pass — Step 2→3 sync source of truth)
         if fkey.startswith("scope_") and fkey.endswith("_description"):
             _idx = int(fkey.split("_")[1])
             _secs = sow.get("scope_sections", [])
@@ -692,11 +692,11 @@ elif st.session_state.step == 2:
                 "Make this more persuasive",
                 "Make this more professional",
                 "Simplify for a non-technical audience",
-                "Custom instructionâ¦",
+                "Custom instruction…",
             ]
             preset_choice = st.selectbox("Improvement style", _presets, key="ai_preset")
 
-        if preset_choice == "Custom instructionâ¦":
+        if preset_choice == "Custom instruction…":
             instruction = st.text_input(
                 "Custom instruction",
                 key="ai_custom_instr",
@@ -705,9 +705,9 @@ elif st.session_state.step == 2:
         else:
             instruction = preset_choice
 
-        # ââ Current value display âââââââââââââââââââââââââââââââââââââââââââââ
+        # ── Current value display ─────────────────────────────────────────────
         if current_val:
-            _preview = current_val[:400] + ("â¦" if len(current_val) > 400 else "")
+            _preview = current_val[:400] + ("…" if len(current_val) > 400 else "")
             st.markdown(
                 f'<div class="ai-box"><strong style="color:#14a4fe;font-size:10px;'
                 f'letter-spacing:1px;text-transform:uppercase;">Current field value</strong>'
@@ -715,10 +715,10 @@ elif st.session_state.step == 2:
                 unsafe_allow_html=True,
             )
 
-        # ââ Load & edit input âââââââââââââââââââââââââââââââââââââââââââââââââ
+        # ── Load & edit input ─────────────────────────────────────────────────
         _load_col, _ = st.columns([1, 3])
         with _load_col:
-            if st.button("â» Load field into editor", key="ai_load_btn", use_container_width=True):
+            if st.button("↻ Load field into editor", key="ai_load_btn", use_container_width=True):
                 st.session_state["ai_input_text"] = current_val
                 st.rerun()
 
@@ -729,10 +729,10 @@ elif st.session_state.step == 2:
             placeholder="Click 'Load field into editor' above, or paste any text you want to improve.",
         )
 
-        # ââ Reword button âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+        # ── Reword button ─────────────────────────────────────────────────────
         _rw_col, _ = st.columns([1, 2])
         with _rw_col:
-            if st.button("â¦ Reword with Claude", type="primary", use_container_width=True, key="btn_reword"):
+            if st.button("✦ Reword with Claude", type="primary", use_container_width=True, key="btn_reword"):
                 if not input_text.strip():
                     st.warning("Please load a field or paste some text first.")
                 elif not instruction.strip():
@@ -740,7 +740,7 @@ elif st.session_state.step == 2:
                 elif not st.session_state.get("api_key"):
                     st.error("API key not configured. Contact your Adchor admin.")
                 else:
-                    with st.spinner("Claude is refining your copyâ¦"):
+                    with st.spinner("Claude is refining your copy…"):
                         try:
                             _result = _ai_reword(
                                 input_text,
@@ -757,11 +757,11 @@ elif st.session_state.step == 2:
                         except Exception as _exc:
                             st.error(f"Reword failed: {_exc}")
 
-        # ââ Result + Apply ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+        # ── Result + Apply ────────────────────────────────────────────────────
         if st.session_state.get("ai_reword_result"):
             st.markdown(
                 "<span style='font-size:11px;font-weight:700;color:#00ff79;"
-                "letter-spacing:1px;text-transform:uppercase;'>â Claude's suggestion</span>"
+                "letter-spacing:1px;text-transform:uppercase;'>✓ Claude's suggestion</span>"
                 " <span style='color:#5a6278;font-size:11px;'>(editable before applying)</span>",
                 unsafe_allow_html=True,
             )
@@ -778,7 +778,7 @@ elif st.session_state.step == 2:
             _t_ftype = st.session_state.get("ai_reword_field_type", ftype)
 
             with _ap1:
-                if st.button("â Apply to field", type="primary", use_container_width=True, key="btn_apply"):
+                if st.button("← Apply to field", type="primary", use_container_width=True, key="btn_apply"):
                     # 1. Force-update the source widget so it shows the new value
                     if _t_wkey:
                         st.session_state[_t_wkey] = edited_result
@@ -799,16 +799,16 @@ elif st.session_state.step == 2:
                     st.session_state.ai_reword_result = ""
                     st.session_state.pop("ai_result_area", None)
                     st.session_state["ai_input_text"] = ""
-                    st.success(f"â Applied to '{selected_label}'! Scroll up to review.")
+                    st.success(f"✓ Applied to '{selected_label}'! Scroll up to review.")
                     st.rerun()
 
             with _ap2:
-                if st.button("â Discard", use_container_width=True, key="btn_discard"):
+                if st.button("✕ Discard", use_container_width=True, key="btn_discard"):
                     st.session_state.ai_reword_result = ""
                     st.session_state.pop("ai_result_area", None)
                     st.rerun()
 
-    # ââ Save & navigate âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Save & navigate ───────────────────────────────────────────────────────
     # sow_data is the single source of truth for Step 3 pricing sync.
     # Saving here ensures any manual edit made in this render is persisted
     # before Step 3 reads it.
@@ -817,18 +817,18 @@ elif st.session_state.step == 2:
     st.divider()
     col_back, _, col_next = st.columns([1, 3, 1])
     with col_back:
-        if st.button("â Back", use_container_width=True):
+        if st.button("← Back", use_container_width=True):
             st.session_state.step = 1
             st.rerun()
     with col_next:
-        if st.button("Pricing â", use_container_width=True, type="primary"):
+        if st.button("Pricing →", use_container_width=True, type="primary"):
             st.session_state.step = 3
             st.rerun()
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # STEP 3 -- PRICING BUILDER  (unchanged except pdf_downloaded reset on enter)
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 3:
     st.markdown('<div class="sec-bar">STEP 3 -- INVESTMENT & PRICING</div>', unsafe_allow_html=True)
     st.caption("Price the services from your SOW. Click any service below to add it, then set the price and quantity.")
@@ -836,12 +836,12 @@ elif st.session_state.step == 3:
     library   = st.session_state.pricing_library
     lib_items = library.get("items", [])
     items     = st.session_state.pricing_items
-    # Step 3 always reads from st.session_state.sow_data â the single source of
-    # truth written at the end of every Step 2 render â so any edit made in
+    # Step 3 always reads from st.session_state.sow_data — the single source of
+    # truth written at the end of every Step 2 render — so any edit made in
     # Step 2 is automatically reflected here without extra wiring.
     sow       = st.session_state.sow_data
 
-    # ââ Section A: Services from your SOW âââââââââââââââââââââââââââââââââââââ
+    # ── Section A: Services from your SOW ─────────────────────────────────────
     scope_sections = sow.get("scope_sections", [])
     if scope_sections:
         st.markdown("##### Services from your SOW")
@@ -849,7 +849,7 @@ elif st.session_state.step == 3:
         sow_cols = st.columns(3)
         for i, sec in enumerate(scope_sections):
             title = sec.get("title", "").strip()
-            desc  = sec.get("description", "")[:80] + "â¦" if len(sec.get("description","")) > 80 else sec.get("description","")
+            desc  = sec.get("description", "")[:80] + "…" if len(sec.get("description","")) > 80 else sec.get("description","")
             if not title:
                 continue
             with sow_cols[i % 3]:
@@ -872,7 +872,7 @@ elif st.session_state.step == 3:
                     st.rerun()
         st.divider()
 
-    # ââ Section B: Pricing Table âââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Section B: Pricing Table ───────────────────────────────────────────────
     st.markdown("##### Line Items")
     if not items:
         st.info("No items yet -- click a service above or use '+ Add Row' below.")
@@ -902,7 +902,7 @@ elif st.session_state.step == 3:
             item["total"] = item["qty"] * item["unit_price"]
             c5.markdown(f"<div style='padding-top:8px;font-weight:700;color:white;'>${item['total']:,.0f}</div>",
                         unsafe_allow_html=True)
-            if c6.button("â", key=f"del_{i}"):
+            if c6.button("✕", key=f"del_{i}"):
                 to_remove.append(i)
 
         for idx in sorted(to_remove, reverse=True):
@@ -912,14 +912,14 @@ elif st.session_state.step == 3:
             st.rerun()
         st.session_state.pricing_items = items
 
-    if st.button("ï¼ Add Row", use_container_width=False):
+    if st.button("＋ Add Row", use_container_width=False):
         items.append({"name":"","description":"","category":"","unit_price":0,"qty":1,"total":0})
         st.session_state.pricing_items = items
         st.rerun()
 
     st.divider()
 
-    # ââ Section C: Totals ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    # ── Section C: Totals ──────────────────────────────────────────────────────
     subtotal = sum(i.get("total", 0) for i in items)
     tc1, tc2 = st.columns([3, 1])
     with tc2:
@@ -939,15 +939,15 @@ elif st.session_state.step == 3:
             Total Investment: ${final_total:,.0f}
         </div>""", unsafe_allow_html=True)
 
-    # ââ Section D: Library (collapsed) ââââââââââââââââââââââââââââââââââââââââ
-    with st.expander("ð Add from Service Library or save new item"):
+    # ── Section D: Library (collapsed) ────────────────────────────────────────
+    with st.expander("📚 Add from Service Library or save new item"):
         lib_col1, lib_col2 = st.columns(2)
         with lib_col1:
             st.markdown("**Quick-add from library**")
             if lib_items:
                 lib_labels = [it["name"] for it in lib_items]
                 sel = st.selectbox("Pick a service", ["-- Select --"] + lib_labels, key="lib_sel", label_visibility="collapsed")
-                if sel != "-- Select --" and st.button("Add to pricing â", use_container_width=True):
+                if sel != "-- Select --" and st.button("Add to pricing ➕", use_container_width=True):
                     idx = lib_labels.index(sel)
                     new = lib_items[idx].copy()
                     new["qty"] = 1
@@ -977,7 +977,7 @@ elif st.session_state.step == 3:
                         st.success(f"'{save_name}' saved to library.")
         st.divider()
         st.download_button(
-            "â¬ Download Pricing Library (commit to GitHub to persist)",
+            "⬇ Download Pricing Library (commit to GitHub to persist)",
             data=json.dumps(st.session_state.pricing_library, indent=2),
             file_name="pricing_library.json",
             mime="application/json",
@@ -986,21 +986,21 @@ elif st.session_state.step == 3:
     st.divider()
     col_back, _, col_next = st.columns([1, 3, 1])
     with col_back:
-        if st.button("â Back", use_container_width=True):
+        if st.button("← Back", use_container_width=True):
             st.session_state.step = 2
             st.rerun()
     with col_next:
         # MODIFIED: reset pdf_downloaded whenever entering Step 4 with new/
         # updated pricing so the user must download the fresh PDF before Done.
-        if st.button("Generate PDF â", use_container_width=True, type="primary"):
+        if st.button("Generate PDF →", use_container_width=True, type="primary"):
             st.session_state.pdf_downloaded = False
             st.session_state.step = 4
             st.rerun()
 
 
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 # STEP 4 -- DOWNLOAD
-# ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 4:
     st.markdown('<div class="sec-bar">STEP 4 -- DOWNLOAD & SEND</div>', unsafe_allow_html=True)
 
@@ -1010,7 +1010,7 @@ elif st.session_state.step == 4:
     total   = st.session_state.sow_total
     discount= st.session_state.sow_discount
 
-    st.success(f"â  SOW ready: **{client} -- {project}**  Â·  Investment: **${total:,.0f}**")
+    st.success(f"✓  SOW ready: **{client} -- {project}**  ·  Investment: **${total:,.0f}**")
 
     col_pdf, col_steps = st.columns([1, 1])
 
@@ -1031,7 +1031,7 @@ elif st.session_state.step == 4:
                 # It returns True on the rerun triggered by the click,
                 # which is the reliable signal that the file was sent to the browser.
                 _downloaded = st.download_button(
-                    label=f"â¬ Download {filename}",
+                    label=f"⬇ Download {filename}",
                     data=pdf_bytes,
                     file_name=filename,
                     mime="application/pdf",
@@ -1048,14 +1048,14 @@ elif st.session_state.step == 4:
             st.markdown(
                 "<div style='margin-top:8px;padding:8px 14px;background:rgba(0,255,121,0.07);"
                 "border:1px solid rgba(0,255,121,0.25);border-radius:8px;font-size:12px;"
-                "color:#00ff79;font-weight:600;'>â PDF downloaded</div>",
+                "color:#00ff79;font-weight:600;'>✓ PDF downloaded</div>",
                 unsafe_allow_html=True,
             )
         else:
             st.markdown(
                 "<div style='margin-top:8px;padding:8px 14px;background:rgba(255,180,0,0.07);"
                 "border:1px solid rgba(255,180,0,0.25);border-radius:8px;font-size:12px;"
-                "color:#ffb400;'>â¬ Click the button above to download the PDF before finishing.</div>",
+                "color:#ffb400;'>⬇ Click the button above to download the PDF before finishing.</div>",
                 unsafe_allow_html=True,
             )
 
@@ -1074,19 +1074,19 @@ elif st.session_state.step == 4:
 
     st.divider()
 
-    # MODIFIED: two-button row â Back on the left, Done on the right.
+    # MODIFIED: two-button row — Back on the left, Done on the right.
     col_back, _, col_done = st.columns([1, 3, 1])
 
     with col_back:
-        if st.button("â Back to Pricing", use_container_width=True):
-            # Going back resets the download flag â new pricing requires a new download.
+        if st.button("← Back to Pricing", use_container_width=True):
+            # Going back resets the download flag — new pricing requires a new download.
             st.session_state.pdf_downloaded = False
             st.session_state.step = 3
             st.rerun()
 
     with col_done:
-        # NEW: Done button â only completes the workflow after the PDF is downloaded.
-        if st.button("â Done", use_container_width=True, type="primary"):
+        # NEW: Done button — only completes the workflow after the PDF is downloaded.
+        if st.button("✓ Done", use_container_width=True, type="primary"):
             if st.session_state.get("pdf_downloaded", False):
                 _reset_sow_state()
                 st.rerun()
