@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 
 # ── Ensure app directory is always in sys.path ────────────────────────────────
-_APP_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd()
+_APP_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd() 
 if _APP_DIR not in sys.path:
     sys.path.insert(0, _APP_DIR)
 
@@ -49,9 +49,8 @@ html, body, [class*="css"],
 }
 
 /* Preserve Material Icons font */
-.material-icons, .material-icons-outlined, .material-icons-round,
-[class*='material-icon'], [class*='material-symbol'] {
-    font-family: 'Material Icons', 'Material Icons Round', 'Material Symbols Rounded' !important;
+[data-testid="stIconMaterial"] {
+    font-family: 'Material Symbols Rounded', 'Material Icons', 'Material Icons Round' !important;
 }
 
 /* ── App background ── */
