@@ -523,7 +523,7 @@ with st.sidebar:
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.step == 1:
     st.markdown('<div class="sec-bar">STEP 1 -- UPLOAD BRIEF & TRANSCRIPT</div>', unsafe_allow_html=True)
-    st.caption("Upload the filled creative brief and paste the call transcript. Claude will extract everything and draft the SOW.")
+    st.caption("Upload the filled creative brief and paste the call transcript. Our AI will extract everything and draft the SOW.")
 
     col_brief, col_trans = st.columns(2)
 
@@ -556,7 +556,7 @@ if st.session_state.step == 1:
             transcript = st.text_area(
                 "Paste Zoom / Teams transcript",
                 height=220,
-                placeholder="Paste the full call transcript here. Claude will extract decisions, requirements, and context...",
+                placeholder="Paste the full call transcript here. The AI will extract decisions, requirements, and context...",
                 label_visibility="collapsed",
             )
         else:
@@ -577,11 +577,11 @@ if st.session_state.step == 1:
         has_input = bool(st.session_state.brief_fields or st.session_state.transcript)
         has_key   = bool(st.session_state.get("api_key"))
         disabled  = not has_input
-        if st.button("⚡ Generate SOW with Claude", use_container_width=True, type="primary", disabled=disabled):
+        if st.button("⚡ Generate SOW", use_container_width=True, type="primary", disabled=disabled):
             if not has_key:
                 st.error("AI generation is not available -- API key not configured. Contact your Adchor admin.")
             else:
-                with st.spinner("Claude is reading your brief and transcript -- drafting the SOW..."):
+                with st.spinner("Reading your brief and transcript — drafting the SOW..."):
                     try:
                         sow = generate_sow_content(
                             st.session_state.brief_fields,
@@ -605,7 +605,7 @@ if st.session_state.step == 1:
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 2:
     st.markdown('<div class="sec-bar">STEP 2 -- REVIEW & EDIT SOW CONTENT</div>', unsafe_allow_html=True)
-    st.caption("All fields are editable. Refine Claude's draft before moving to pricing.")
+    st.caption("All fields are editable. Refine the draft before moving to pricing.")
 
     sow = st.session_state.sow_data or {}
 
@@ -616,7 +616,7 @@ elif st.session_state.step == 2:
         '<div class="ai-instr-panel">'
         '<div class="ai-instr-label">✦ AI SOW Editor</div>'
         '<div class="ai-instr-sub">'
-        'Tell Claude what to fix and it will update all relevant fields automatically. '
+        'Tell the AI what to fix and it will update all relevant fields automatically. '
         'You can still edit anything manually after the update.'
         '</div>'
         '</div>',
@@ -639,7 +639,7 @@ elif st.session_state.step == 2:
     _upd_col, _ = st.columns([2, 3])
     with _upd_col:
         _ai_sow_clicked = st.button(
-            "✦ Update SOW with Claude",
+            "✦ Update SOW",
             type="primary",
             use_container_width=True,
             key="btn_ai_sow_update",
@@ -651,7 +651,7 @@ elif st.session_state.step == 2:
         elif not st.session_state.get("api_key"):
             st.error("API key not configured. Contact your Adchor admin.")
         else:
-            with st.spinner("Claude is updating your SOW…"):
+            with st.spinner("Updating your SOW…"):
                 try:
                     _updated_sow = _ai_update_sow(
                         sow,
@@ -791,7 +791,7 @@ elif st.session_state.step == 2:
     # ════════════════════════════════════════════════════════════════════════════
     with st.expander("✦ AI Reword Assistant", expanded=False):
         st.caption(
-            "Select a SOW field, load its content, ask Claude to improve it, "
+            "Select a SOW field, load its content, ask the AI to improve it, "
             "then apply the result directly back into the field."
         )
 
@@ -879,7 +879,7 @@ elif st.session_state.step == 2:
         # ── Reword button ─────────────────────────────────────────────────────
         _rw_col, _ = st.columns([1, 2])
         with _rw_col:
-            if st.button("✦ Reword with Claude", type="primary", use_container_width=True, key="btn_reword"):
+            if st.button("✦ Reword", type="primary", use_container_width=True, key="btn_reword"):
                 if not input_text.strip():
                     st.warning("Please load a field or paste some text first.")
                 elif not instruction.strip():
@@ -887,7 +887,7 @@ elif st.session_state.step == 2:
                 elif not st.session_state.get("api_key"):
                     st.error("API key not configured. Contact your Adchor admin.")
                 else:
-                    with st.spinner("Claude is refining your copy…"):
+                    with st.spinner("Refining your copy…"):
                         try:
                             _result = _ai_reword(
                                 input_text,
@@ -908,12 +908,12 @@ elif st.session_state.step == 2:
         if st.session_state.get("ai_reword_result"):
             st.markdown(
                 "<span style='font-size:11px;font-weight:700;color:#00ff79;"
-                "letter-spacing:1px;text-transform:uppercase;'>✓ Claude's suggestion</span>"
+                "letter-spacing:1px;text-transform:uppercase;'>✓ AI suggestion</span>"
                 " <span style='color:#5a6278;font-size:11px;'>(editable before applying)</span>",
                 unsafe_allow_html=True,
             )
             edited_result = st.text_area(
-                "Claude's suggestion",
+                "AI suggestion",
                 height=130,
                 key="ai_result_area",
                 label_visibility="collapsed",
