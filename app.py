@@ -179,6 +179,29 @@ html, body, [class*="css"],
     color: #c8ccd8;
 }
 
+/* ── AI instruction panel (Step 2 global editor) ── */
+.ai-instr-panel {
+    background: linear-gradient(135deg, #090d1c 0%, #070b17 100%);
+    border: 1px solid #1a2545;
+    border-left: 4px solid #14a4fe;
+    border-radius: 12px;
+    padding: 14px 20px 12px;
+    margin: 8px 0 4px;
+}
+.ai-instr-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #14a4fe;
+    margin-bottom: 3px;
+}
+.ai-instr-sub {
+    font-size: 11px;
+    color: #5a6278;
+    line-height: 1.5;
+}
+
 /* ── AI reword box ── */
 .ai-box {
     background: #0d0f1a;
@@ -321,6 +344,53 @@ def _ai_reword(text: str, instruction: str, api_key: str) -> str:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# NEW: AI SOW Update — whole-document revision from a free-form instruction
+# ════════════════════════════════════════════════════════════════════════════════
+def _ai_update_sow(sow_data: dict, instruction: str, api_key: str) -> dict:
+    """
+    Call Claude to apply a free-form instruction to the entire SOW.
+    Returns the complete updated sow_data dict (all fields, even unchanged ones).
+    """
+    import anthropic as _ant
+    import json as _json
+
+    _client = _ant.Anthropic(api_key=api_key)
+    _sow_json = _json.dumps(sow_data, indent=2, ensure_ascii=False)
+
+    _msg = _client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=4096,
+        messages=[{
+            "role": "user",
+            "content": (
+                "You are an expert editor of Statement of Work (SOW) documents "
+                "for a creative advertising agency called Adchor.\n\n"
+                "Here is the current SOW data in JSON:\n"
+                f"{_sow_json}\n\n"
+                f"User instruction: {instruction}\n\n"
+                "Apply the instruction and return the COMPLETE updated SOW as a single "
+                "valid JSON object. Rules:\n"
+                "1. Include EVERY field — even ones you did not change.\n"
+                "2. Preserve existing values unless the instruction explicitly changes them.\n"
+                "3. For list fields (assumptions, out_of_scope, scope_sections[].services, "
+                "scope_sections[].deliverables), always return JSON arrays of strings.\n"
+                "4. Keep the same JSON structure and key names as the input.\n"
+                "5. Return raw JSON only — no markdown, no code fences, no commentary."
+            ),
+        }],
+    )
+
+    _text = _msg.content[0].text.strip()
+    # Strip markdown code fences if the model wrapped in them anyway
+    if _text.startswith("```"):
+        _lines = _text.splitlines()
+        _inner = _lines[1:-1] if _lines and _lines[-1].strip() == "```" else _lines[1:]
+        _text = "\n".join(_inner).strip()
+
+    return _json.loads(_text)
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # NEW: Widget keys that must be cleared when resetting a SOW
 # ════════════════════════════════════════════════════════════════════════════════
 _SOW_FIELD_WIDGET_KEYS = [
@@ -330,6 +400,7 @@ _SOW_FIELD_WIDGET_KEYS = [
 _AI_WIDGET_KEYS = [
     "ai_field_select", "ai_preset", "ai_custom_instr",
     "ai_input_text", "ai_result_area",
+    "ai_sow_instruction",
 ]
 
 
@@ -353,11 +424,13 @@ def _reset_sow_state():
         "ai_reword_widget_key": None,
         "ai_reword_field_type": "",
         "ai_input_text": "",
+        "ai_sow_instruction": "",
+        "ai_sow_update_status": "",
     }
     for k, v in reset_vals.items():
         st.session_state[k] = v
     # Clear SOW field widget state so they re-initialise with fresh sow_data
-    for k in _SOV_FIELD_WIDGET_KEYS + _AI_WIDGET_KEYS:
+    for k in _SOW_FIELD_WIDGET_KEYS + _AI_WIDGET_KEYS:
         st.session_state.pop(k, None)
     # Clear scope-section widget keys (support up to 30 sections)
     for i in range(30):
@@ -382,6 +455,8 @@ defaults = {
     "ai_reword_widget_key": None, # widget key for the targeted field
     "ai_reword_field_type": "",   # "text" | "list"
     "ai_input_text": "",          # content in the AI reword input box
+    "ai_sow_instruction": "",     # global SOW AI editor instruction box
+    "ai_sow_update_status": "",   # success/error banner after AI SOW update
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -533,6 +608,78 @@ elif st.session_state.step == 2:
     st.caption("All fields are editable. Refine Claude's draft before moving to pricing.")
 
     sow = st.session_state.sow_data or {}
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # AI INSTRUCTION BOX — whole-SOW editor via free-form Claude instruction
+    # ════════════════════════════════════════════════════════════════════════════
+    st.markdown(
+        '<div class="ai-instr-panel">'
+        '<div class="ai-instr-label">✦ AI SOW Editor</div>'
+        '<div class="ai-instr-sub">'
+        'Tell Claude what to fix and it will update all relevant fields automatically. '
+        'You can still edit anything manually after the update.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    _ai_sow_instr = st.text_area(
+        "AI instruction",
+        key="ai_sow_instruction",
+        height=85,
+        label_visibility="collapsed",
+        placeholder=(
+            'e.g. "The client name is wrong — update it to Acme Corp."  ·  '
+            '"Remove brand audit from services and add social media management."  ·  '
+            '"Rewrite the project overview to sound more strategic and concise."  ·  '
+            '"The assumptions are incomplete — add: client provides all assets by Day 5."'
+        ),
+    )
+
+    _upd_col, _ = st.columns([2, 3])
+    with _upd_col:
+        _ai_sow_clicked = st.button(
+            "✦ Update SOW with Claude",
+            type="primary",
+            use_container_width=True,
+            key="btn_ai_sow_update",
+        )
+
+    if _ai_sow_clicked:
+        if not _ai_sow_instr.strip():
+            st.warning("Please type an instruction before submitting.")
+        elif not st.session_state.get("api_key"):
+            st.error("API key not configured. Contact your Adchor admin.")
+        else:
+            with st.spinner("Claude is updating your SOW…"):
+                try:
+                    _updated_sow = _ai_update_sow(
+                        sow,
+                        _ai_sow_instr.strip(),
+                        st.session_state.api_key,
+                    )
+                    # Write updated SOW back as the source of truth
+                    st.session_state.sow_data = _updated_sow
+                    # Clear all field widget keys so they reinitialise from new sow_data
+                    for _wk in _SOW_FIELD_WIDGET_KEYS:
+                        st.session_state.pop(_wk, None)
+                    for _wi in range(30):
+                        for _wk in [f"st_{_wi}", f"sd_{_wi}", f"ss_{_wi}", f"del_{_wi}"]:
+                            st.session_state.pop(_wk, None)
+                    # Clear the instruction box
+                    st.session_state.pop("ai_sow_instruction", None)
+                    st.session_state["ai_sow_update_status"] = (
+                        "✓ SOW updated! Review the fields below — you can still edit anything manually."
+                    )
+                    st.rerun()
+                except Exception as _exc:
+                    st.error(f"Update failed: {_exc}")
+
+    if st.session_state.get("ai_sow_update_status"):
+        st.success(st.session_state["ai_sow_update_status"])
+        st.session_state["ai_sow_update_status"] = ""
+
+    st.divider()
 
     # ── Client Details ────────────────────────────────────────────────────────
     with st.expander("Client & Project Details", expanded=True):
