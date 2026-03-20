@@ -490,7 +490,7 @@ with st.sidebar:
     st.markdown(pills_html, unsafe_allow_html=True)
     st.divider()
 
-    # API Key -- loaded once from Streamlit Secrets or environment, never shown to users
+    # API Key -- loaded once from Streamlit Secrets or Environment, never shown to users
     def _load_api_key():
         try:
             return st.secrets["ANTHROPIC_API_KEY"]
@@ -696,9 +696,9 @@ elif st.session_state.step == 2:
         sow["budget_range"]   = c8.text_input("Budget Range",       value=sow.get("budget_range", ""))
 
     # ── Strategic Summary ─────────────────────────────────────────────────────
-    # MODIFIED: explicit keys added to why_now, project_overview, core_message
-    # so the AI Reword Apply button can force-update these widgets.
-    with st.expander("Strategic Summary", expanded=True):
+   # MODIFIED: explicit keys added to why_now, project_overview, core_message
+   # so the AI Reword Apply button can force-update these widgets.
+    with st.expander("P��trategic Summary", expanded=True):
         sow["why_now"] = st.text_area(
             "Why This, Why Now",
             value=sow.get("why_now", ""),
@@ -1070,15 +1070,17 @@ elif st.session_state.step == 3:
     subtotal = sum(i.get("total", 0) for i in items)
     tc1, tc2 = st.columns([3, 1])
     with tc2:
-        disc_raw = st.text_input("Discount ($)", value=str(int(st.session_state.sow_discount)) if st.session_state.sow_discount else "", placeholder="0", key="disc_input")
+        disc_raw = st.text_input("Discount (%)", value=str(int(st.session_state.sow_discount)) if st.session_state.sow_discount else "", placeholder="0", key="disc_input")
         try:
-            discount = float(str(disc_raw).replace(",","").replace("$","").strip()) if disc_raw else 0.0
+            discount_pct = float(str(disc_raw).replace(",","").replace("%","").strip()) if disc_raw else 0.0
+            discount_pct = max(0.0, min(100.0, discount_pct))
         except ValueError:
-            discount = 0.0
-        st.session_state.sow_discount = discount
-        final_total = subtotal - discount
+            discount_pct = 0.0
+        discount_amt = subtotal * discount_pct / 100
+        st.session_state.sow_discount = discount_pct
+        final_total = subtotal - discount_amt
         st.session_state.sow_total = final_total
-        disc_line = f'<div class="sub">Discount: -${discount:,.0f}</div>' if discount else ""
+        disc_line = f'<div class="sub">Discount ({discount_pct:.0f}%): -${discount_amt:,.0f}</div>' if discount_pct else ""
         st.markdown(f"""
         <div class="pricing-total">
             <div class="sub">Subtotal: ${subtotal:,.0f}</div>
@@ -1154,8 +1156,10 @@ elif st.session_state.step == 4:
     sow     = st.session_state.sow_data or {}
     client  = sow.get("client_name", "Client")
     project = sow.get("project_name", "Project")
-    total   = st.session_state.sow_total
-    discount= st.session_state.sow_discount
+    total        = st.session_state.sow_total
+    discount_pct = st.session_state.sow_discount
+    subtotal_s4  = sum(i.get("total", 0) for i in st.session_state.pricing_items)
+    discount_amt = subtotal_s4 * discount_pct / 100
 
     st.success(f"✓  SOW ready: **{client} -- {project}**  ·  Investment: **${total:,.0f}**")
 
@@ -1170,7 +1174,7 @@ elif st.session_state.step == 4:
                     sow_data=sow,
                     pricing_items=st.session_state.pricing_items,
                     total=total,
-                    discount=discount,
+                    discount=discount_amt,
                 )
                 filename = f"{client}_{project}_SOW.pdf".replace(" ", "_").replace("/", "-")
 
