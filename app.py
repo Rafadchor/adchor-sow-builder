@@ -59,62 +59,121 @@ html, body, [class*="css"],
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
     background: #000000 !important;
-    border-right: 1px solid #1a1d2e !important;
+    border-right: 1px solid #0d0f1a !important;
 }
-[data-testid="stSidebar"] > div { padding-top: 24px !important; }
+[data-testid="stSidebar"] > div { padding-top: 20px !important; }
 
-/* ── Sidebar header ── */
-.adchor-header { padding: 0 0 20px; border-bottom: 1px solid #1a1d2e; margin-bottom: 16px; }
-.adchor-logomark {
-    display: inline-block;
-    background: #014bf7;
-    color: white;
-    font-size: 15px;
-    font-weight: 900;
-    width: 34px; height: 34px;
-    border-radius: 8px;
-    text-align: center;
-    line-height: 34px;
-    letter-spacing: -1px;
-    margin-bottom: 10px;
-    box-shadow: 0 0 20px rgba(1,75,247,0.5);
+/* ══════════════════════════════════════════
+   SIDEBAR — Brand Row
+══════════════════════════════════════════ */
+.sb-brand-row {
+    display: flex; align-items: center; gap: 11px;
+    margin-bottom: 22px; padding: 0 2px;
 }
-.adchor-wordmark {
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin: 0; line-height: 1;
+.sb-brand-mark {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #014bf7, #021de0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 900; color: white;
+    box-shadow: 0 4px 20px rgba(1,75,247,0.6), 0 0 40px rgba(1,75,247,0.2);
+    flex-shrink: 0;
 }
-.adchor-subtext {
-    color: #14a4fe;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin: 4px 0 0;
+.sb-bname { font-size: 13px; font-weight: 800; color: #fff; letter-spacing: 3px; text-transform: uppercase; }
+.sb-bsub  { font-size: 8px; font-weight: 600; color: #14a4fe; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+/* ── Progress bar ── */
+.sb-prog-wrap { margin-bottom: 18px; padding: 0 2px; }
+.sb-prog-label {
+    font-size: 8px; font-weight: 700; color: #1e2540; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 7px;
+    display: flex; justify-content: space-between;
+}
+.sb-prog-label span { color: #014bf7; }
+.sb-prog-track { height: 3px; background: #0d0f1a; border-radius: 99px; }
+.sb-prog-fill  { height: 3px; background: linear-gradient(90deg, #014bf7, #14a4fe); border-radius: 99px; box-shadow: 0 0 8px rgba(20,164,254,0.6); }
+
+/* ── Step items ── */
+.sb-step-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 10px; border-radius: 11px; margin-bottom: 4px;
+}
+.sb-step-icon {
+    width: 32px; height: 32px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; flex-shrink: 0;
+}
+.sb-step-name { font-size: 11px; font-weight: 700; }
+.sb-step-desc { font-size: 9px; font-weight: 500; margin-top: 2px; }
+
+.step-done .sb-step-icon { background: rgba(0,255,121,0.1); color: #00ff79; }
+.step-done .sb-step-name { color: #00ff79; }
+.step-done .sb-step-desc { color: rgba(0,255,121,0.5); }
+
+.step-active { background: rgba(1,75,247,0.1); }
+.step-active .sb-step-icon { background: #014bf7; color: white; box-shadow: 0 4px 14px rgba(1,75,247,0.55); }
+.step-active .sb-step-name { color: #ffffff; }
+.step-active .sb-step-desc { color: rgba(255,255,255,0.45); }
+
+.step-pend .sb-step-icon { background: rgba(255,255,255,0.03); color: #1e2540; border: 1px solid #0d0f1a; }
+.step-pend .sb-step-name { color: #1e2540; }
+.step-pend .sb-step-desc { color: #141828; }
+
+/* ── Active Client chip ── */
+.sb-client-chip {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 12px 14px;
+}
+.sb-chip-label {
+    font-size: 8px; font-weight: 700; color: #1e2540;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;
+}
+.sb-chip-row { display: flex; align-items: center; gap: 9px; }
+.sb-chip-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #00ff79; box-shadow: 0 0 6px rgba(0,255,121,0.7); flex-shrink: 0;
+}
+.sb-chip-name { font-size: 13px; font-weight: 800; color: #9aa0b4; }
+
+/* ══════════════════════════════════════════
+   HERO BAR — Step header
+══════════════════════════════════════════ */
+.hero-bar {
+    background: linear-gradient(135deg, #010c30 0%, #014bf7 60%, #021de0 100%);
+    padding: 20px 26px;
+    border-radius: 12px;
+    position: relative; overflow: hidden;
+    margin: 0 0 20px;
+    box-shadow: 0 6px 28px rgba(1,75,247,0.4);
+}
+.hero-bar::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(20,164,254,0.12);
+}
+.hero-bar::after {
+    content: '';
+    position: absolute; bottom: -25px; right: 110px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(0,255,121,0.07);
+}
+.hero-eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 5px;
+}
+.hero-title {
+    font-size: 20px; font-weight: 900; color: white;
+    letter-spacing: -0.5px; line-height: 1.1;
+}
+.hero-sub {
+    font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); margin-top: 5px;
 }
 
-/* ── Step pills ── */
-.step-row { display: flex; flex-direction: column; gap: 5px; margin: 4px 0; }
-.pill {
-    padding: 9px 14px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-    transition: all 0.2s;
-}
-.pill-done    { background: rgba(0,255,121,0.08); color: #00ff79; border: 1px solid rgba(0,255,121,0.25); }
-.pill-active  { background: #014bf7; color: white; border: 1px solid #014bf7; box-shadow: 0 4px 14px rgba(1,75,247,0.4); }
-.pill-pending { background: transparent; color: #3a3f52; border: 1px solid #1a1d2e; }
-
-/* ── Section header bar ── */
+/* ── Section header bar (sub-section within a step) ── */
 .sec-bar {
-    background: linear-gradient(90deg, #014bf7 0%, #021de0 100%);
+    background: linear-gradient(135deg, #030a20 0%, #014bf7 100%);
     color: white;
     padding: 13px 22px;
     border-radius: 10px;
@@ -123,7 +182,14 @@ html, body, [class*="css"],
     letter-spacing: 2.5px;
     text-transform: uppercase;
     margin: 0 0 18px;
-    box-shadow: 0 6px 24px rgba(1,75,247,0.3);
+    box-shadow: 0 4px 20px rgba(1,75,247,0.3);
+    position: relative; overflow: hidden;
+}
+.sec-bar::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(20,164,254,0.1);
 }
 
 /* ── Scope block header ── */
@@ -140,19 +206,26 @@ html, body, [class*="css"],
     box-shadow: 0 4px 12px rgba(1,75,247,0.25);
 }
 
-/* ── Pricing total ── */
+/* ── Pricing total / Investment bar ── */
 .pricing-total {
     background: linear-gradient(135deg, #021de0 0%, #014bf7 100%);
     color: white;
-    padding: 18px 22px;
-    border-radius: 12px;
+    padding: 18px 24px;
+    border-radius: 14px;
     text-align: right;
     font-size: 22px;
     font-weight: 800;
     margin-top: 14px;
-    box-shadow: 0 8px 28px rgba(1,75,247,0.35);
-    border: 1px solid rgba(20,164,254,0.3);
+    box-shadow: 0 8px 32px rgba(1,75,247,0.4);
+    border: 1px solid rgba(20,164,254,0.25);
     letter-spacing: -0.5px;
+    position: relative; overflow: hidden;
+}
+.pricing-total::before {
+    content: '';
+    position: absolute; top: -25px; right: -25px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(20,164,254,0.12);
 }
 .pricing-total .sub { font-size: 12px; opacity: 0.65; font-weight: 500; letter-spacing: 0; }
 
@@ -302,6 +375,71 @@ hr { border-color: #1a1d2e !important; margin: 16px 0 !important; }
 ::-webkit-scrollbar-track { background: #0a0c12; }
 ::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #014bf7; }
+
+/* ══════════════════════════════════════════
+   LIGHT MODE
+══════════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+    .stApp { background: #eef1fb !important; }
+    [data-testid="stAppViewBlockContainer"] { background: #eef1fb !important; }
+    [data-testid="stSidebar"] {
+        background: #ffffff !important;
+        border-right: 1px solid #e4e8f4 !important;
+        box-shadow: 2px 0 20px rgba(1,75,247,0.06) !important;
+    }
+    /* Sidebar typography */
+    .sb-bname { color: #0d1025; }
+    .sb-bsub  { color: #014bf7; }
+    .sb-prog-label { color: #c8d0e4; }
+    .sb-prog-track { background: #eef1f8; }
+    .sb-prog-fill  { box-shadow: none; }
+    /* Step states */
+    .step-done .sb-step-icon { background: rgba(0,168,84,0.1); color: #00a854; }
+    .step-done .sb-step-name { color: #00a854; }
+    .step-done .sb-step-desc { color: rgba(0,168,84,0.6); }
+    .step-active { background: #f0f4ff; }
+    .step-active .sb-step-icon { background: #014bf7; box-shadow: 0 4px 14px rgba(1,75,247,0.35); }
+    .step-active .sb-step-name { color: #014bf7; }
+    .step-active .sb-step-desc { color: #8090b8; }
+    .step-pend .sb-step-icon { background: #f4f6fc; color: #c8d0e4; border-color: #eef1f8; }
+    .step-pend .sb-step-name { color: #c8d0e4; }
+    .step-pend .sb-step-desc { color: #d8dff0; }
+    /* Client chip */
+    .sb-client-chip { background: #f4f7ff; border-color: #e4e8f4; }
+    .sb-chip-label  { color: #c0c8e0; }
+    .sb-chip-dot    { background: #00a854; box-shadow: 0 0 5px rgba(0,168,84,0.5); }
+    .sb-chip-name   { color: #3a4060; }
+    /* Inputs */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stNumberInput > div > div > input {
+        background: #ffffff !important;
+        border-color: #e4e8f4 !important;
+        color: #1a1d2e !important;
+    }
+    /* Info / AI boxes */
+    .info-box { background: #f0f4ff; border-color: #c8d4f8; color: #4a5280; }
+    .ai-instr-panel { background: #f0f4ff; border-color: #c8d4f8; }
+    .ai-instr-sub   { color: #6070a0; }
+    .ai-box { background: #f4f6fc; border-color: #c8d4f8; color: #5a6080; }
+    /* Expander */
+    [data-testid="stExpander"] { background: #ffffff !important; border-color: #e4e8f4 !important; }
+    /* Selectbox */
+    [data-testid="stSelectbox"] > div > div {
+        background: #ffffff !important;
+        border-color: #e4e8f4 !important;
+        color: #1a1d2e !important;
+    }
+    /* File uploader */
+    [data-testid="stFileUploader"] { background: #ffffff !important; border-color: #c8d4f8 !important; }
+    /* Scrollbar */
+    ::-webkit-scrollbar-track { background: #eef1fb; }
+    ::-webkit-scrollbar-thumb { background: #c8d0e4; }
+    /* Dividers */
+    hr { border-color: #e4e8f4 !important; }
+    /* Caption */
+    .stCaption { color: #8090b4 !important; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -464,30 +602,59 @@ for k, v in defaults.items():
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
+    # ── Brand row ─────────────────────────────────────────────────────────────
     _logo_path = _BASE_DIR / 'assets' / 'logo.png'
-    _logo_html = ""
     if _logo_path.exists():
         _logo_b64 = base64.b64encode(_logo_path.read_bytes()).decode()
-        _logo_html = f'<img src="data:image/png;base64,{_logo_b64}" style="width:100%;max-width:200px;display:block;margin:0 auto 10px;" />'
+        _brand_mark = f'<img src="data:image/png;base64,{_logo_b64}" style="width:40px;height:40px;border-radius:12px;object-fit:cover;flex-shrink:0;" />'
+    else:
+        _brand_mark = '<div class="sb-brand-mark">A</div>'
     st.markdown(f"""
-    {_logo_html}
-    <div style="border-bottom:1px solid #1a1d2e; padding-bottom:14px; margin-bottom:14px; margin-top:2px;">
-        <span style="color:#14a4fe; font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; font-family:'Montserrat',sans-serif;">SOW Builder</span>
+    <div class="sb-brand-row">
+        {_brand_mark}
+        <div>
+            <div class="sb-bname">Adchor</div>
+            <div class="sb-bsub">SOW Builder</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Step indicators
-    step_labels = ["1 Upload", "2 Content", "3 Pricing", "4 Download"]
-    pills_html = '<div class="step-row">'
-    for i, lbl in enumerate(step_labels, 1):
+    # ── Progress bar ──────────────────────────────────────────────────────────
+    _prog_pct = min(100, int((st.session_state.step - 1) / 3 * 100))
+    st.markdown(f"""
+    <div class="sb-prog-wrap">
+        <div class="sb-prog-label">Progress <span>{_prog_pct}%</span></div>
+        <div class="sb-prog-track"><div class="sb-prog-fill" style="width:{_prog_pct}%"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Step indicators ───────────────────────────────────────────────────────
+    _step_info = [
+        ("Upload Brief",  "PDF & transcript"),
+        ("Review SOW",    "AI draft content"),
+        ("Pricing",       "Line items & total"),
+        ("Download PDF",  "Export & send"),
+    ]
+    _steps_html = ""
+    for i, (name, desc) in enumerate(_step_info, 1):
         if i < st.session_state.step:
-            pills_html += f'<span class="pill pill-done">✓ {lbl}</span>'
+            _state = "step-done"
+            _icon  = "&#10003;"
         elif i == st.session_state.step:
-            pills_html += f'<span class="pill pill-active">{lbl}</span>'
+            _state = "step-active"
+            _icon  = str(i)
         else:
-            pills_html += f'<span class="pill pill-pending">{lbl}</span>'
-    pills_html += '</div>'
-    st.markdown(pills_html, unsafe_allow_html=True)
+            _state = "step-pend"
+            _icon  = str(i)
+        _steps_html += f"""
+        <div class="sb-step-item {_state}">
+            <div class="sb-step-icon">{_icon}</div>
+            <div>
+                <div class="sb-step-name">{name}</div>
+                <div class="sb-step-desc">{desc}</div>
+            </div>
+        </div>"""
+    st.markdown(_steps_html, unsafe_allow_html=True)
     st.divider()
 
     # API Key -- loaded once from Streamlit Secrets or environment, never shown to users
@@ -505,25 +672,41 @@ with st.sidebar:
         st.markdown("""
         <div style="background:rgba(255,60,60,0.07);border:1px solid rgba(255,60,60,0.25);
             border-radius:8px;padding:10px 14px;font-size:11px;color:#ff6b6b;">
-            ⚠ API key not configured.<br>
+            &#9888; API key not configured.<br>
             <span style="color:#5a6278;">Contact your Adchor admin.</span>
         </div>""", unsafe_allow_html=True)
     st.divider()
 
     # MODIFIED: use centralised reset helper
-    if st.button("↺ Start New SOW", use_container_width=True):
+    if st.button("&#8635; Start New SOW", use_container_width=True):
         _reset_sow_state()
         st.rerun()
 
-    st.markdown("<div style='margin-top:12px;color:#2a2d3e;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;'>Adchor™ · 2026</div>", unsafe_allow_html=True)
+    # ── Active Client chip ────────────────────────────────────────────────────
+    _client_name = (st.session_state.sow_data or {}).get("client_name", "") or "No active client"
+    st.markdown(f"""
+    <div class="sb-client-chip">
+        <div class="sb-chip-label">Active Client</div>
+        <div class="sb-chip-row">
+            <div class="sb-chip-dot"></div>
+            <div class="sb-chip-name">{_client_name}</div>
+        </div>
+    </div>
+    <div style='margin-top:14px;color:#141828;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;'>Adchor&#8482; &middot; 2026</div>
+    """, unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # STEP 1 -- INPUT  (unchanged)
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.step == 1:
-    st.markdown('<div class="sec-bar">STEP 1 -- UPLOAD BRIEF & TRANSCRIPT</div>', unsafe_allow_html=True)
-    st.caption("Upload the filled creative brief and paste the call transcript. Our AI will extract everything and draft the SOW.")
+    st.markdown("""
+    <div class="hero-bar">
+        <div class="hero-eyebrow">Step 1 of 4</div>
+        <div class="hero-title">Upload Brief &amp; Transcript</div>
+        <div class="hero-sub">Upload your filled creative brief PDF and call transcript &mdash; our AI extracts everything and drafts the SOW</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     col_brief, col_trans = st.columns(2)
 
@@ -604,8 +787,13 @@ if st.session_state.step == 1:
 # STEP 2 -- REVIEW & EDIT CONTENT
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 2:
-    st.markdown('<div class="sec-bar">STEP 2 -- REVIEW & EDIT SOW CONTENT</div>', unsafe_allow_html=True)
-    st.caption("All fields are editable. Refine the draft before moving to pricing.")
+    st.markdown("""
+    <div class="hero-bar">
+        <div class="hero-eyebrow">Step 2 of 4</div>
+        <div class="hero-title">Review &amp; Edit SOW Content</div>
+        <div class="hero-sub">All fields are editable &mdash; refine the AI draft before moving to pricing</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     sow = st.session_state.sow_data or {}
 
@@ -977,8 +1165,13 @@ elif st.session_state.step == 2:
 # STEP 3 -- PRICING BUILDER  (unchanged except pdf_downloaded reset on enter)
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 3:
-    st.markdown('<div class="sec-bar">STEP 3 -- INVESTMENT & PRICING</div>', unsafe_allow_html=True)
-    st.caption("Price the services from your SOW. Click any service below to add it, then set the price and quantity.")
+    st.markdown("""
+    <div class="hero-bar">
+        <div class="hero-eyebrow">Step 3 of 4</div>
+        <div class="hero-title">Investment &amp; Pricing</div>
+        <div class="hero-sub">Price the services from your SOW &mdash; click any service to add it, then set price and quantity</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     library   = st.session_state.pricing_library
     lib_items = library.get("items", [])
@@ -1151,7 +1344,13 @@ elif st.session_state.step == 3:
 # STEP 4 -- DOWNLOAD
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 4:
-    st.markdown('<div class="sec-bar">STEP 4 -- DOWNLOAD & SEND</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-bar">
+        <div class="hero-eyebrow">Step 4 of 4</div>
+        <div class="hero-title">Download &amp; Send</div>
+        <div class="hero-sub">Generate your branded PDF and deliver via Adobe Sign</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     sow     = st.session_state.sow_data or {}
     client  = sow.get("client_name", "Client")
