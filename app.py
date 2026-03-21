@@ -490,7 +490,7 @@ with st.sidebar:
     st.markdown(pills_html, unsafe_allow_html=True)
     st.divider()
 
-    # API Key -- loaded once from Streamlit Secrets or Environment, never shown to users
+    # API Key -- loaded once from Streamlit Secrets or environment, never shown to users
     def _load_api_key():
         try:
             return st.secrets["ANTHROPIC_API_KEY"]
@@ -577,7 +577,7 @@ if st.session_state.step == 1:
         has_input = bool(st.session_state.brief_fields or st.session_state.transcript)
         has_key   = bool(st.session_state.get("api_key"))
         disabled  = not has_input
-        if st.button("⚡ Generate SOW", use_container_width=True, type="primary", disabled=disabled):
+        if st.button("Generate SOW", use_container_width=True, type="primary", disabled=disabled):
             if not has_key:
                 st.error("AI generation is not available -- API key not configured. Contact your Adchor admin.")
             else:
@@ -614,7 +614,7 @@ elif st.session_state.step == 2:
     # ════════════════════════════════════════════════════════════════════════════
     st.markdown(
         '<div class="ai-instr-panel">'
-        '<div class="ai-instr-label">✦ AI SOW Editor</div>'
+        '<div class="ai-instr-label">AI SOW Editor</div>'
         '<div class="ai-instr-sub">'
         'Tell the AI what to fix and it will update all relevant fields automatically. '
         'You can still edit anything manually after the update.'
@@ -639,7 +639,7 @@ elif st.session_state.step == 2:
     _upd_col, _ = st.columns([2, 3])
     with _upd_col:
         _ai_sow_clicked = st.button(
-            "✦ Update SOW",
+            "Update SOW",
             type="primary",
             use_container_width=True,
             key="btn_ai_sow_update",
@@ -696,9 +696,9 @@ elif st.session_state.step == 2:
         sow["budget_range"]   = c8.text_input("Budget Range",       value=sow.get("budget_range", ""))
 
     # ── Strategic Summary ─────────────────────────────────────────────────────
-   # MODIFIED: explicit keys added to why_now, project_overview, core_message
-   # so the AI Reword Apply button can force-update these widgets.
-    with st.expander("P��trategic Summary", expanded=True):
+    # MODIFIED: explicit keys added to why_now, project_overview, core_message
+    # so the AI Reword Apply button can force-update these widgets.
+    with st.expander("Strategic Summary", expanded=True):
         sow["why_now"] = st.text_area(
             "Why This, Why Now",
             value=sow.get("why_now", ""),
@@ -727,7 +727,7 @@ elif st.session_state.step == 2:
     sections = sow.get("scope_sections", [{"title": "", "description": "", "services": [], "deliverables": []}])
     for i, sec in enumerate(sections):
         label = sec.get("title") or f"Section {i + 1}"
-        with st.expander(f"▾  {label}", expanded=(i == 0)):
+        with st.expander(f"{label}", expanded=(i == 0)):
             sec["title"]       = st.text_input("Section Title", value=sec.get("title", ""),       key=f"st_{i}")
             # key sd_{i} already existed; kept unchanged — Apply targets this key
             sec["description"] = st.text_area("Description",   value=sec.get("description", ""), height=80, key=f"sd_{i}")
@@ -789,7 +789,7 @@ elif st.session_state.step == 2:
     # ════════════════════════════════════════════════════════════════════════════
     # NEW: AI Reword Assistant
     # ════════════════════════════════════════════════════════════════════════════
-    with st.expander("✦ AI Reword Assistant", expanded=False):
+    with st.expander("AI Reword Assistant", expanded=False):
         st.caption(
             "Select a SOW field, load its content, ask the AI to improve it, "
             "then apply the result directly back into the field."
@@ -879,7 +879,7 @@ elif st.session_state.step == 2:
         # ── Reword button ─────────────────────────────────────────────────────
         _rw_col, _ = st.columns([1, 2])
         with _rw_col:
-            if st.button("✦ Reword", type="primary", use_container_width=True, key="btn_reword"):
+            if st.button("Reword", type="primary", use_container_width=True, key="btn_reword"):
                 if not input_text.strip():
                     st.warning("Please load a field or paste some text first.")
                 elif not instruction.strip():
@@ -1089,14 +1089,14 @@ elif st.session_state.step == 3:
         </div>""", unsafe_allow_html=True)
 
     # ── Section D: Library (collapsed) ────────────────────────────────────────
-    with st.expander("📚 Add from Service Library or save new item"):
+    with st.expander("Add from Service Library or save new item"):
         lib_col1, lib_col2 = st.columns(2)
         with lib_col1:
             st.markdown("**Quick-add from library**")
             if lib_items:
                 lib_labels = [it["name"] for it in lib_items]
                 sel = st.selectbox("Pick a service", ["-- Select --"] + lib_labels, key="lib_sel", label_visibility="collapsed")
-                if sel != "-- Select --" and st.button("Add to pricing ➕", use_container_width=True):
+                if sel != "-- Select --" and st.button("Add to pricing", use_container_width=True):
                     idx = lib_labels.index(sel)
                     new = lib_items[idx].copy()
                     new["qty"] = 1
@@ -1126,7 +1126,7 @@ elif st.session_state.step == 3:
                         st.success(f"'{save_name}' saved to library.")
         st.divider()
         st.download_button(
-            "⬇ Download Pricing Library (commit to GitHub to persist)",
+            "Download Pricing Library (commit to GitHub to persist)",
             data=json.dumps(st.session_state.pricing_library, indent=2),
             file_name="pricing_library.json",
             mime="application/json",
@@ -1182,7 +1182,7 @@ elif st.session_state.step == 4:
                 # It returns True on the rerun triggered by the click,
                 # which is the reliable signal that the file was sent to the browser.
                 _downloaded = st.download_button(
-                    label=f"⬇ Download {filename}",
+                    label=f"Download {filename}",
                     data=pdf_bytes,
                     file_name=filename,
                     mime="application/pdf",
@@ -1206,7 +1206,7 @@ elif st.session_state.step == 4:
             st.markdown(
                 "<div style='margin-top:8px;padding:8px 14px;background:rgba(255,180,0,0.07);"
                 "border:1px solid rgba(255,180,0,0.25);border-radius:8px;font-size:12px;"
-                "color:#ffb400;'>⬇ Click the button above to download the PDF before finishing.</div>",
+                "color:#ffb400;'>Click the button above to download the PDF before finishing.</div>",
                 unsafe_allow_html=True,
             )
 
