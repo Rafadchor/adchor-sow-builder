@@ -372,13 +372,36 @@ html.dark  .sb-logo-light { display: none !important; }
     box-shadow: 0 6px 22px rgba(1,75,247,0.6) !important;
     transform: translateY(-1px) !important;
 }
-.stButton > button[kind="secondary"] {
-    background: transparent !important;
-    border: 1px solid #1e2235 !important;
-    color: #9aa0b4 !important;
+/* CSS variables — dark mode defaults */
+:root {
+    --btn2-bg:          transparent;
+    --btn2-border:      #1e2235;
+    --btn2-color:       #9aa0b4;
+    --btn2-hover-bg:    transparent;
+    --btn2-hover-border:#014bf7;
+    --btn2-hover-color: #9aa0b4;
 }
+/* light mode overrides via variable on html element */
+html.light {
+    --btn2-bg:          #ffffff;
+    --btn2-border:      #d1d5db;
+    --btn2-color:       #111827;
+    --btn2-hover-bg:    #f3f4f6;
+    --btn2-hover-border:#014bf7;
+    --btn2-hover-color: #111827;
+}
+.stButton > button[kind="secondary"] {
+    background:   var(--btn2-bg)     !important;
+    border-color: var(--btn2-border) !important;
+    color:        var(--btn2-color)  !important;
+}
+.stButton > button[kind="secondary"] p,
+.stButton > button[kind="secondary"] span,
+.stButton > button[kind="secondary"] div { color: var(--btn2-color) !important; }
 .stButton > button[kind="secondary"]:hover {
-    border-color: #014bf7 !important;
+    background:   var(--btn2-hover-bg)     !important;
+    border-color: var(--btn2-hover-border) !important;
+    color:        var(--btn2-hover-color)  !important;
 }
 
 /* ── File uploader ── */
@@ -525,21 +548,6 @@ html.light .sb-chip-name   { color: #3a4060; }
 html.light .stButton > button[kind="primary"],
 html.light .stButton > button[kind="primary"] p,
 html.light .stButton > button[kind="primary"] span { color: #ffffff !important; }
-html.light .stButton > button[kind="secondary"] {
-    background: #ffffff !important;
-    border-color: #d1d5db !important;
-    color: #111827 !important;
-}
-html.light .stButton > button[kind="secondary"] p,
-html.light .stButton > button[kind="secondary"] span,
-html.light .stButton > button[kind="secondary"] div {
-    color: #111827 !important;
-}
-html.light .stButton > button[kind="secondary"]:hover {
-    background: #f3f4f6 !important;
-    border-color: #014bf7 !important;
-    color: #111827 !important;
-}
 html.light .stTextInput > div > div > input,
 html.light .stTextArea > div > div > textarea,
 html.light .stNumberInput > div > div > input {
