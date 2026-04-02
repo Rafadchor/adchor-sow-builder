@@ -378,7 +378,7 @@ html.dark  .sb-logo-light { display: none !important; }
     border: 1px solid #1e2235 !important;
     color: #9aa0b4 !important;
 }
-.stButton > button[kind="secondary"]:hover {
+html.dark .stButton > button[kind="secondary"]:hover {
     border-color: #014bf7 !important;
     color: white !important;
 }
@@ -530,7 +530,7 @@ html.light .stButton > button[kind="primary"] span { color: #ffffff !important; 
 html.light .stButton > button[kind="secondary"] {
     background: #ffffff !important;
     border-color: #c8d0e4 !important;
-    color: #4a5280 !important;
+    color: #1a2040 !important;
 }
 html.light .stButton > button[kind="secondary"]:hover {
     background: #e2e6f0 !important;
