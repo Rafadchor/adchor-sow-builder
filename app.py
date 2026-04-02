@@ -886,8 +886,8 @@ with st.sidebar:
     st.divider()
     _sow_lib = st.session_state.get("sow_library", {"sows": []})
     _saved   = _sow_lib.get("sows", [])
-    _lib_label = f"📁 SOW Library ({len(_saved)})" if _saved else "📁 SOW Library"
-    with st.expander(_lib_label, expanded=False):
+    _lib_label = f"SOW Library ({len(_saved)})" if _saved else "SOW Library"
+    with st.expander(_lib_label, expanded=False, icon=":material/folder_open:"):
         if not _saved:
             st.caption("No SOWs saved yet. Complete a SOW and click 'Save to Library'.")
         else:
@@ -903,7 +903,6 @@ with st.sidebar:
                 _lc1, _lc2 = st.columns([2, 1])
                 with _lc1:
                     if st.button("Load", key=f"lib_load_{_si}", use_container_width=True):
-                        # Restore SOW + pricing into session state
                         _pending = {
                             "ta_why_now":          (_entry.get("sow_data") or {}).get("why_now", ""),
                             "ta_project_overview": (_entry.get("sow_data") or {}).get("project_overview", ""),
@@ -912,7 +911,6 @@ with st.sidebar:
                             "ta_out_of_scope":     "\n".join((_entry.get("sow_data") or {}).get("out_of_scope", [])),
                             "ta_timeline_notes":   (_entry.get("sow_data") or {}).get("timeline_notes", ""),
                         }
-                        # Clear scope widget keys first
                         for _ki in range(30):
                             st.session_state.pop(f"sd_{_ki}", None)
                             st.session_state.pop(f"st_{_ki}", None)
@@ -941,25 +939,79 @@ with st.sidebar:
             use_container_width=True,
             help="Downloads sow_library.json — commit to GitHub to persist across deploys",
         )
-        st.caption("Restore from a previously downloaded backup:")
-        _up = st.file_uploader(
-            "Upload sow_library.json to restore",
-            type=["json"],
-            key="sow_lib_upload",
-            help="Only accepts .json backup files downloaded from this app",
+
+        # ── Import SOW from PDF ───────────────────────────────────────────────
+        st.caption("Import a previous SOW PDF to pre-populate fields:")
+        _pdf_up = st.file_uploader(
+            "Upload a previous SOW PDF",
+            type=["pdf"],
+            key="sow_pdf_import",
+            help="Upload a previously generated Adchor SOW PDF — AI will extract the content and pre-populate all fields for editing.",
         )
-        if _up:
-            try:
-                _restored = json.load(_up)
-                if "sows" in _restored:
-                    st.session_state.sow_library = _restored
-                    save_sow_library(_restored)
-                    st.success(f"Restored {len(_restored['sows'])} SOWs.")
-                    st.rerun()
-                else:
-                    st.error("Invalid library file.")
-            except Exception:
-                st.error("Could not read file.")
+        if _pdf_up:
+            if not st.session_state.get("api_key"):
+                st.error("API key not configured — cannot extract SOW fields.")
+            else:
+                with st.spinner("Reading PDF and extracting SOW fields…"):
+                    try:
+                        from pypdf import PdfReader
+                        import io as _io
+                        _reader = PdfReader(_io.BytesIO(_pdf_up.read()))
+                        _pdf_text = "\n".join(
+                            p.extract_text() or "" for p in _reader.pages
+                        ).strip()
+
+                        if not _pdf_text:
+                            st.error("Could not extract text from this PDF. Make sure it's a text-based PDF, not a scanned image.")
+                        else:
+                            import anthropic as _ant
+                            _client = _ant.Anthropic(api_key=st.session_state.api_key)
+                            _msg = _client.messages.create(
+                                model="claude-sonnet-4-6",
+                                max_tokens=4096,
+                                messages=[{
+                                    "role": "user",
+                                    "content": (
+                                        "You are extracting structured data from a Statement of Work (SOW) document "
+                                        "for a creative agency called Adchor.\n\n"
+                                        "SOW document text:\n"
+                                        f"{_pdf_text[:8000]}\n\n"
+                                        "Extract all available fields and return a single valid JSON object with this exact structure. "
+                                        "Use empty string or empty array for fields not found:\n"
+                                        '{"client_name":"","project_name":"","account_lead":"","deadline":"","budget":"","date":"",'
+                                        '"project_overview":"","why_now":"","objective":"","audience":"","core_message":"",'
+                                        '"scope_sections":[{"title":"","description":"","services":[],"deliverables":[]}],'
+                                        '"assumptions":[],"out_of_scope":[],"timeline_notes":"","review_rounds":"2","adchor_notes":""}\n\n'
+                                        "Return raw JSON only — no markdown, no code fences, no commentary."
+                                    ),
+                                }],
+                            )
+                            _extracted_text = _msg.content[0].text.strip()
+                            if _extracted_text.startswith("```"):
+                                _lines = _extracted_text.splitlines()
+                                _extracted_text = "\n".join(
+                                    _lines[1:-1] if _lines[-1].strip() == "```" else _lines[1:]
+                                ).strip()
+
+                            _extracted = json.loads(_extracted_text)
+                            st.session_state.sow_data = _extracted
+
+                            # Clear all widget keys so they re-init from sow_data
+                            for _wk in ["ta_why_now", "ta_project_overview", "ta_core_message",
+                                        "ta_assumptions", "ta_out_of_scope", "ta_timeline_notes"]:
+                                st.session_state.pop(_wk, None)
+                            for _wi in range(30):
+                                for _wk in [f"st_{_wi}", f"sd_{_wi}", f"ss_{_wi}", f"del_{_wi}"]:
+                                    st.session_state.pop(_wk, None)
+
+                            st.session_state.step = 2
+                            st.session_state.ai_reword_result = ""
+                            st.success("✓ SOW extracted — review and edit the fields below.")
+                            st.rerun()
+                    except json.JSONDecodeError:
+                        st.error("AI could not parse the extracted fields. Try again.")
+                    except Exception as _e:
+                        st.error(f"Extraction failed: {_e}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
