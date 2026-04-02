@@ -126,6 +126,62 @@ html.dark  .sb-logo-light { display: none !important; }
     display: flex; align-items: center; gap: 12px;
     padding: 10px 10px; border-radius: 11px; margin-bottom: 4px;
 }
+
+/* ── Clickable step nav buttons ── */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-marker)
+  + [data-testid="stButton"] > button {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 11px !important;
+    padding: 10px 10px !important;
+    width: 100% !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+    margin-bottom: 0 !important;
+    color: #1e2540 !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-done)
+  + [data-testid="stButton"] > button {
+    color: #00ff79 !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-done)
+  + [data-testid="stButton"] > button:hover {
+    background: rgba(0,255,121,0.06) !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-done)
+  + [data-testid="stButton"] > button p { color: #00ff79 !important; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-active)
+  + [data-testid="stButton"] > button {
+    background: rgba(1,75,247,0.12) !important;
+    color: #ffffff !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-active)
+  + [data-testid="stButton"] > button:hover {
+    background: rgba(1,75,247,0.2) !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-active)
+  + [data-testid="stButton"] > button p { color: #ffffff !important; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-pend)
+  + [data-testid="stButton"] > button { color: #3a4060 !important; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-pend)
+  + [data-testid="stButton"] > button:hover {
+    background: rgba(255,255,255,0.03) !important;
+    color: #6a7090 !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.snav-pend)
+  + [data-testid="stButton"] > button p { color: inherit !important; }
+/* desc captions under step buttons */
+[data-testid="stSidebar"] .snav-desc {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    margin: -8px 0 6px 10px !important;
+    display: block !important;
+}
 .sb-step-icon {
     width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
@@ -834,26 +890,28 @@ with st.sidebar:
         ("Pricing",       "Line items & total"),
         ("Download PDF",  "Export & send"),
     ]
-    _steps_html = ""
+    _cur = st.session_state.step
     for i, (name, desc) in enumerate(_step_info, 1):
-        if i < st.session_state.step:
-            _state = "step-done"
-            _icon  = "&#10003;"
-        elif i == st.session_state.step:
-            _state = "step-active"
-            _icon  = str(i)
+        if i < _cur:
+            _snav_cls = "snav-marker snav-done"
+            _icon     = "✓"
+        elif i == _cur:
+            _snav_cls = "snav-marker snav-active"
+            _icon     = str(i)
         else:
-            _state = "step-pend"
-            _icon  = str(i)
-        _steps_html += f"""
-        <div class="sb-step-item {_state}">
-            <div class="sb-step-icon">{_icon}</div>
-            <div>
-                <div class="sb-step-name">{name}</div>
-                <div class="sb-step-desc">{desc}</div>
-            </div>
-        </div>"""
-    st.markdown(_steps_html, unsafe_allow_html=True)
+            _snav_cls = "snav-marker snav-pend"
+            _icon     = str(i)
+        # Marker div (adjacent sibling CSS targets the button right after it)
+        st.markdown(f'<div class="{_snav_cls}"></div>', unsafe_allow_html=True)
+        if st.button(f"{_icon}  {name}", key=f"nav_step_{i}", use_container_width=True):
+            st.session_state.step = i
+            st.rerun()
+        # Description caption below each button
+        _desc_color = "#00c060" if i < _cur else ("#6a7aaa" if i == _cur else "#2a3050")
+        st.markdown(
+            f'<span class="snav-desc" style="color:{_desc_color};">{desc}</span>',
+            unsafe_allow_html=True,
+        )
     st.divider()
 
     # API Key -- loaded once from Streamlit Secrets or environment, never shown to users
