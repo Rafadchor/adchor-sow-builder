@@ -85,11 +85,11 @@ html, body, [class*="css"],
    SIDEBAR — Brand Row & Logo
 ══════════════════════════════════════════ */
 .sb-brand-row {
-    display: flex; align-items: center; gap: 11px;
+    display: flex; align-items: center;
     margin-bottom: 22px; padding: 0 2px;
 }
 /* Logo visibility: dark mode shows dark logo, light mode shows light logo */
-.sb-logo { height: 60px; width: auto; display: block; max-width: 100%; }
+.sb-logo { width: 100%; height: auto; display: block; max-width: 220px; }
 .sb-logo-light { display: none; }
 @media (prefers-color-scheme: light) {
     .sb-logo-dark  { display: none; }
