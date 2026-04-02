@@ -931,6 +931,109 @@ with st.sidebar:
                 st.markdown("<hr style='margin:6px 0;border-color:#1e2540;'>", unsafe_allow_html=True)
 
         st.divider()
+
+        # ── Download individual SOW as PDF ────────────────────────────────────
+        if _saved:
+            st.markdown("**Download SOW as PDF**")
+            _pdf_sow_options = {
+                f"{s.get('client_name','?')} — {s.get('project_name','?')} ({s.get('updated_at', s.get('created_at',''))[:10]})": i
+                for i, s in enumerate(_saved)
+            }
+            _pdf_sow_sel = st.selectbox(
+                "Select SOW",
+                options=list(_pdf_sow_options.keys()),
+                key="lib_pdf_sel",
+                label_visibility="collapsed",
+            )
+            if _pdf_sow_sel:
+                _pdf_idx   = _pdf_sow_options[_pdf_sow_sel]
+                _pdf_entry = _saved[_pdf_idx]
+                _pdf_sd    = _pdf_entry.get("sow_data") or {}
+                _pdf_pi    = _pdf_entry.get("pricing_items") or []
+                _pdf_disc  = float(_pdf_entry.get("sow_discount") or 0)
+                _pdf_total = sum(
+                    (it.get("qty", 0) * it.get("rate", 0)) for it in _pdf_pi
+                ) * (1 - _pdf_disc / 100)
+                try:
+                    _pdf_sow_bytes = build_sow_pdf(
+                        sow_data=_pdf_sd,
+                        pricing_items=_pdf_pi,
+                        total=_pdf_total,
+                        discount=_pdf_disc,
+                    )
+                    _pdf_cn  = _pdf_sd.get("client_name", "SOW").replace(" ", "_")
+                    _pdf_pn  = _pdf_sd.get("project_name", "").replace(" ", "_")
+                    _pdf_fn  = f"SOW_{_pdf_cn}_{_pdf_pn}.pdf" if _pdf_pn else f"SOW_{_pdf_cn}.pdf"
+                    st.download_button(
+                        "⬇ Download PDF",
+                        data=_pdf_sow_bytes,
+                        file_name=_pdf_fn,
+                        mime="application/pdf",
+                        use_container_width=True,
+                    )
+                except Exception as _pdf_ex:
+                    st.error(f"PDF build failed: {_pdf_ex}")
+
+            st.markdown("**Batch Excel Report**")
+            # Build Excel with one row per SOW for reporting
+            try:
+                import io as _io_xl
+                import openpyxl as _opxl
+                from openpyxl.styles import Font as _XLFont, PatternFill as _XLFill, Alignment as _XLAlign
+                _wb = _opxl.Workbook()
+                _ws = _wb.active
+                _ws.title = "SOW Library"
+                _headers = [
+                    "Client", "Project", "Account Lead", "Date", "Deadline",
+                    "Budget", "Pricing Items", "Discount (%)", "Total (calc)",
+                    "Status", "Created", "Updated",
+                ]
+                _hdr_fill = _XLFill(fill_type="solid", fgColor="014BF7")
+                _hdr_font = _XLFont(bold=True, color="FFFFFF")
+                for _ci, _h in enumerate(_headers, 1):
+                    _cell = _ws.cell(row=1, column=_ci, value=_h)
+                    _cell.fill = _hdr_fill
+                    _cell.font = _hdr_font
+                    _cell.alignment = _XLAlign(horizontal="center", vertical="center")
+                for _ri, _s in enumerate(_saved, 2):
+                    _sd   = _s.get("sow_data") or {}
+                    _pi   = _s.get("pricing_items") or []
+                    _disc = float(_s.get("sow_discount") or 0)
+                    _tot  = sum((it.get("qty", 0) * it.get("rate", 0)) for it in _pi) * (1 - _disc / 100)
+                    _row  = [
+                        _s.get("client_name", ""),
+                        _s.get("project_name", ""),
+                        _sd.get("account_lead", ""),
+                        _sd.get("date", ""),
+                        _sd.get("deadline", ""),
+                        _sd.get("budget", ""),
+                        len(_pi),
+                        _disc,
+                        round(_tot, 2),
+                        _s.get("status", "draft"),
+                        _s.get("created_at", "")[:10],
+                        _s.get("updated_at", _s.get("created_at", ""))[:10],
+                    ]
+                    for _ci, _val in enumerate(_row, 1):
+                        _ws.cell(row=_ri, column=_ci, value=_val)
+                # Auto-size columns
+                for _col in _ws.columns:
+                    _max_w = max(len(str(_c.value or "")) for _c in _col)
+                    _ws.column_dimensions[_col[0].column_letter].width = min(_max_w + 4, 40)
+                _xl_buf = _io_xl.BytesIO()
+                _wb.save(_xl_buf)
+                _xl_buf.seek(0)
+                st.download_button(
+                    "⬇ Download Excel Report",
+                    data=_xl_buf.getvalue(),
+                    file_name="SOW_Library_Report.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
+            except Exception as _xl_ex:
+                st.error(f"Excel export failed: {_xl_ex}")
+
+        st.divider()
         st.download_button(
             "Download Library Backup (.json)",
             data=json.dumps(_sow_lib, indent=2),
