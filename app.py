@@ -113,7 +113,7 @@ html.dark  .sb-logo-light { display: none !important; }
 /* ── Progress bar ── */
 .sb-prog-wrap { margin-bottom: 18px; padding: 0 2px; }
 .sb-prog-label {
-    font-size: 8px; font-weight: 700; color: #1e2540; letter-spacing: 2px;
+    font-size: 10px; font-weight: 700; color: #1e2540; letter-spacing: 2px;
     text-transform: uppercase; margin-bottom: 7px;
     display: flex; justify-content: space-between;
 }
@@ -127,12 +127,12 @@ html.dark  .sb-logo-light { display: none !important; }
     padding: 10px 10px; border-radius: 11px; margin-bottom: 4px;
 }
 .sb-step-icon {
-    width: 32px; height: 32px; border-radius: 10px;
+    width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 900; flex-shrink: 0;
+    font-size: 15px; font-weight: 900; flex-shrink: 0;
 }
-.sb-step-name { font-size: 11px; font-weight: 700; }
-.sb-step-desc { font-size: 9px; font-weight: 500; margin-top: 2px; }
+.sb-step-name { font-size: 13px; font-weight: 700; }
+.sb-step-desc { font-size: 11px; font-weight: 500; margin-top: 2px; }
 
 .step-done .sb-step-icon { background: rgba(0,255,121,0.1); color: #00ff79; }
 .step-done .sb-step-name { color: #00ff79; }
