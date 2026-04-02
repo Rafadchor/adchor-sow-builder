@@ -127,19 +127,6 @@ html.dark  .sb-logo-light { display: none !important; }
     padding: 10px 10px; border-radius: 11px; margin-bottom: 4px;
 }
 
-/* ── Ghost nav buttons: hidden in DOM, triggered by JS ── */
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.sb-ghost-btn)
-  + [data-testid="stButton"] {
-    height: 0 !important; min-height: 0 !important;
-    overflow: hidden !important; margin: 0 !important; padding: 0 !important;
-}
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.sb-ghost-btn)
-  + [data-testid="stButton"] > button {
-    height: 0 !important; min-height: 0 !important;
-    padding: 0 !important; margin: 0 !important;
-    overflow: hidden !important; border: none !important;
-    background: transparent !important;
-}
 .sb-step-icon {
     width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
@@ -848,16 +835,7 @@ with st.sidebar:
         ("Pricing",       "Line items & total"),
         ("Download PDF",  "Export & send"),
     ]
-    # Build original HTML visual with onclick → ghost buttons
-    _steps_html = """<script>
-function _sbNav(n){
-  var sb=document.querySelector('[data-testid="stSidebar"]');
-  if(!sb)return;
-  var btn=Array.from(sb.querySelectorAll('[data-testid="stButton"] button'))
-    .find(function(b){return b.innerText.trim()==='__nav'+n;});
-  if(btn)btn.click();
-}
-</script>"""
+    _steps_html = ""
     for i, (name, desc) in enumerate(_step_info, 1):
         if i < st.session_state.step:
             _state = "step-done"
@@ -869,7 +847,7 @@ function _sbNav(n){
             _state = "step-pend"
             _icon  = str(i)
         _steps_html += f"""
-        <div class="sb-step-item {_state}" style="cursor:pointer;" onclick="_sbNav({i})">
+        <div class="sb-step-item {_state}">
             <div class="sb-step-icon">{_icon}</div>
             <div>
                 <div class="sb-step-name">{name}</div>
@@ -877,12 +855,6 @@ function _sbNav(n){
             </div>
         </div>"""
     st.markdown(_steps_html, unsafe_allow_html=True)
-    # Ghost buttons — height:0 via CSS, found and clicked by _sbNav()
-    for i in range(1, len(_step_info) + 1):
-        st.markdown('<span class="sb-ghost-btn"></span>', unsafe_allow_html=True)
-        if st.button(f"__nav{i}", key=f"nav_step_{i}"):
-            st.session_state.step = i
-            st.rerun()
     st.divider()
 
     # API Key -- loaded once from Streamlit Secrets or environment, never shown to users
