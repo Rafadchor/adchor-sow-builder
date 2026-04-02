@@ -378,7 +378,7 @@ html.dark  .sb-logo-light { display: none !important; }
     border: 1px solid #1e2235 !important;
     color: #9aa0b4 !important;
 }
-html.dark .stButton > button[kind="secondary"]:hover {
+.stButton > button[kind="secondary"]:hover {
     border-color: #014bf7 !important;
     color: white !important;
 }
@@ -532,14 +532,14 @@ html.light .stButton > button[kind="secondary"] {
     border-color: #c8d0e4 !important;
     color: #1a2040 !important;
 }
-html.light .stButton > button[kind="secondary"]:hover {
+html.light body .stButton > button[kind="secondary"]:hover {
     background: #e2e6f0 !important;
     border-color: #a0a8c4 !important;
     color: #1a2040 !important;
 }
-html.light .stButton > button[kind="secondary"]:hover p,
-html.light .stButton > button[kind="secondary"]:hover span,
-html.light .stButton > button[kind="secondary"]:hover div {
+html.light body .stButton > button[kind="secondary"]:hover p,
+html.light body .stButton > button[kind="secondary"]:hover span,
+html.light body .stButton > button[kind="secondary"]:hover div {
     color: #1a2040 !important;
 }
 html.light .stTextInput > div > div > input,
