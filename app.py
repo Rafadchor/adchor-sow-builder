@@ -886,8 +886,8 @@ with st.sidebar:
     st.divider()
     _sow_lib = st.session_state.get("sow_library", {"sows": []})
     _saved   = _sow_lib.get("sows", [])
-    _lib_label = f"SOW Library ({len(_saved)})" if _saved else "SOW Library"
-    with st.expander(_lib_label, expanded=False, icon=":material/folder_open:"):
+    _lib_label = f"🗂 SOW Library ({len(_saved)})" if _saved else "🗂 SOW Library"
+    with st.expander(_lib_label, expanded=False):
         if not _saved:
             st.caption("No SOWs saved yet. Complete a SOW and click 'Save to Library'.")
         else:
