@@ -526,19 +526,19 @@ html.light .stButton > button[kind="primary"],
 html.light .stButton > button[kind="primary"] p,
 html.light .stButton > button[kind="primary"] span { color: #ffffff !important; }
 html.light .stButton > button[kind="secondary"] {
-    background: #6b7280 !important;
-    border-color: #6b7280 !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+    color: #111827 !important;
 }
 html.light .stButton > button[kind="secondary"] p,
 html.light .stButton > button[kind="secondary"] span,
 html.light .stButton > button[kind="secondary"] div {
-    color: #ffffff !important;
+    color: #111827 !important;
 }
 html.light .stButton > button[kind="secondary"]:hover {
-    background: #4b5563 !important;
-    border-color: #4b5563 !important;
-    color: #ffffff !important;
+    background: #f3f4f6 !important;
+    border-color: #014bf7 !important;
+    color: #111827 !important;
 }
 html.light .stTextInput > div > div > input,
 html.light .stTextArea > div > div > textarea,
