@@ -372,18 +372,7 @@ html.dark  .sb-logo-light { display: none !important; }
     box-shadow: 0 6px 22px rgba(1,75,247,0.6) !important;
     transform: translateY(-1px) !important;
 }
-.stButton > button[kind="secondary"] {
-    background:   var(--secondary-background-color, transparent) !important;
-    border:       1px solid rgba(49,51,63,0.2) !important;
-    color:        var(--text-color, #9aa0b4) !important;
-}
-.stButton > button[kind="secondary"] p,
-.stButton > button[kind="secondary"] span,
-.stButton > button[kind="secondary"] div {
-    color: var(--text-color, #9aa0b4) !important;
-}
 .stButton > button[kind="secondary"]:hover {
-    filter: brightness(0.92) !important;
     border-color: #014bf7 !important;
 }
 
