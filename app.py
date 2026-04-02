@@ -372,36 +372,19 @@ html.dark  .sb-logo-light { display: none !important; }
     box-shadow: 0 6px 22px rgba(1,75,247,0.6) !important;
     transform: translateY(-1px) !important;
 }
-/* CSS variables — dark mode defaults */
-:root {
-    --btn2-bg:          transparent;
-    --btn2-border:      #1e2235;
-    --btn2-color:       #9aa0b4;
-    --btn2-hover-bg:    transparent;
-    --btn2-hover-border:#014bf7;
-    --btn2-hover-color: #9aa0b4;
-}
-/* light mode overrides via variable on html element */
-html.light {
-    --btn2-bg:          #ffffff;
-    --btn2-border:      #d1d5db;
-    --btn2-color:       #111827;
-    --btn2-hover-bg:    #f3f4f6;
-    --btn2-hover-border:#014bf7;
-    --btn2-hover-color: #111827;
-}
 .stButton > button[kind="secondary"] {
-    background:   var(--btn2-bg)     !important;
-    border-color: var(--btn2-border) !important;
-    color:        var(--btn2-color)  !important;
+    background:   var(--secondary-background-color, transparent) !important;
+    border:       1px solid rgba(49,51,63,0.2) !important;
+    color:        var(--text-color, #9aa0b4) !important;
 }
 .stButton > button[kind="secondary"] p,
 .stButton > button[kind="secondary"] span,
-.stButton > button[kind="secondary"] div { color: var(--btn2-color) !important; }
+.stButton > button[kind="secondary"] div {
+    color: var(--text-color, #9aa0b4) !important;
+}
 .stButton > button[kind="secondary"]:hover {
-    background:   var(--btn2-hover-bg)     !important;
-    border-color: var(--btn2-hover-border) !important;
-    color:        var(--btn2-hover-color)  !important;
+    filter: brightness(0.92) !important;
+    border-color: #014bf7 !important;
 }
 
 /* ── File uploader ── */
