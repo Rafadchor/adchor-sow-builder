@@ -952,6 +952,8 @@ with st.sidebar:
             if not st.session_state.get("api_key"):
                 st.error("API key not configured — cannot extract SOW fields.")
             else:
+                _sow_extract_result = None
+                _sow_extract_error  = None
                 with st.spinner("Reading PDF and extracting SOW fields…"):
                     try:
                         from pypdf import PdfReader
@@ -962,7 +964,7 @@ with st.sidebar:
                         ).strip()
 
                         if not _pdf_text:
-                            st.error("Could not extract text from this PDF. Make sure it's a text-based PDF, not a scanned image.")
+                            _sow_extract_error = "Could not extract text from this PDF. Make sure it's a text-based PDF, not a scanned image."
                         else:
                             import anthropic as _ant
                             _client = _ant.Anthropic(api_key=st.session_state.api_key)
@@ -992,26 +994,26 @@ with st.sidebar:
                                 _extracted_text = "\n".join(
                                     _lines[1:-1] if _lines[-1].strip() == "```" else _lines[1:]
                                 ).strip()
-
-                            _extracted = json.loads(_extracted_text)
-                            st.session_state.sow_data = _extracted
-
-                            # Clear all widget keys so they re-init from sow_data
-                            for _wk in ["ta_why_now", "ta_project_overview", "ta_core_message",
-                                        "ta_assumptions", "ta_out_of_scope", "ta_timeline_notes"]:
-                                st.session_state.pop(_wk, None)
-                            for _wi in range(30):
-                                for _wk in [f"st_{_wi}", f"sd_{_wi}", f"ss_{_wi}", f"del_{_wi}"]:
-                                    st.session_state.pop(_wk, None)
-
-                            st.session_state.step = 2
-                            st.session_state.ai_reword_result = ""
-                            st.success("✓ SOW extracted — review and edit the fields below.")
-                            st.rerun()
+                            _sow_extract_result = json.loads(_extracted_text)
                     except json.JSONDecodeError:
-                        st.error("AI could not parse the extracted fields. Try again.")
+                        _sow_extract_error = "AI could not parse the extracted fields. Try again."
                     except Exception as _e:
-                        st.error(f"Extraction failed: {_e}")
+                        _sow_extract_error = f"Extraction failed: {_e}"
+
+                # Rerun must happen OUTSIDE the spinner context
+                if _sow_extract_result:
+                    st.session_state.sow_data = _sow_extract_result
+                    for _wk in ["ta_why_now", "ta_project_overview", "ta_core_message",
+                                "ta_assumptions", "ta_out_of_scope", "ta_timeline_notes"]:
+                        st.session_state.pop(_wk, None)
+                    for _wi in range(30):
+                        for _wk in [f"st_{_wi}", f"sd_{_wi}", f"ss_{_wi}", f"del_{_wi}"]:
+                            st.session_state.pop(_wk, None)
+                    st.session_state.step = 2
+                    st.session_state.ai_reword_result = ""
+                    st.rerun()
+                elif _sow_extract_error:
+                    st.error(_sow_extract_error)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
