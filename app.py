@@ -380,7 +380,6 @@ html.dark  .sb-logo-light { display: none !important; }
 }
 .stButton > button[kind="secondary"]:hover {
     border-color: #014bf7 !important;
-    color: white !important;
 }
 
 /* ── File uploader ── */
@@ -532,15 +531,9 @@ html.light .stButton > button[kind="secondary"] {
     border-color: #c8d0e4 !important;
     color: #1a2040 !important;
 }
-html.light body .stButton > button[kind="secondary"]:hover {
-    background: #e2e6f0 !important;
-    border-color: #a0a8c4 !important;
-    color: #1a2040 !important;
-}
-html.light body .stButton > button[kind="secondary"]:hover p,
-html.light body .stButton > button[kind="secondary"]:hover span,
-html.light body .stButton > button[kind="secondary"]:hover div {
-    color: #1a2040 !important;
+html.light .stButton > button[kind="secondary"]:hover {
+    background: #d0d4e4 !important;
+    border-color: #014bf7 !important;
 }
 html.light .stTextInput > div > div > input,
 html.light .stTextArea > div > div > textarea,
