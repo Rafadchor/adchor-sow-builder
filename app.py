@@ -546,8 +546,8 @@ html.light .info-box { background: #f0f4ff; border-color: #c8d4f8; color: #4a528
 html.light .ai-instr-panel { background: #f0f4ff; border-color: #c8d4f8; }
 html.light .ai-instr-sub   { color: #6070a0; }
 html.light .ai-box { background: #f4f6fc; border-color: #c8d4f8; color: #5a6080; }
-html.light .dl-note { background: #f0fff4; border-color: rgba(0,180,80,0.3); color: #111827; }
-html.light .dl-note strong { color: #111827; }
+html.light .dl-note { background: #f0fff4 !important; border-color: rgba(0,180,80,0.3) !important; color: #111827 !important; }
+html.light .dl-note * { color: #111827 !important; }
 html.light [data-testid="stExpander"] { background: #ffffff !important; border-color: #e4e8f4 !important; }
 html.light [data-testid="stSelectbox"] > div > div {
     background: #ffffff !important;
