@@ -950,10 +950,9 @@ with st.sidebar:
                 _pdf_entry = _saved[_pdf_idx]
                 _pdf_sd    = _pdf_entry.get("sow_data") or {}
                 _pdf_pi    = _pdf_entry.get("pricing_items") or []
-                _pdf_disc  = float(_pdf_entry.get("sow_discount") or 0)
-                _pdf_total = sum(
-                    (it.get("qty", 0) * it.get("rate", 0)) for it in _pdf_pi
-                ) * (1 - _pdf_disc / 100)
+                _pdf_disc    = float(_pdf_entry.get("sow_discount") or 0)
+                _pdf_subtot  = sum(it.get("total", 0) for it in _pdf_pi)
+                _pdf_total   = _pdf_subtot - (_pdf_subtot * _pdf_disc / 100)
                 try:
                     _pdf_sow_bytes = build_sow_pdf(
                         sow_data=_pdf_sd,
@@ -974,10 +973,11 @@ with st.sidebar:
                 except Exception as _pdf_ex:
                     st.error(f"PDF build failed: {_pdf_ex}")
 
-            st.markdown("**Batch Excel Report**")
-            # Build Excel with one row per SOW for reporting
+            st.markdown("**Batch Excel + PDFs (ZIP)**")
+            # Bundle Excel report + individual PDFs in a ZIP
             try:
                 import io as _io_xl
+                import zipfile as _zf
                 import openpyxl as _opxl
                 from openpyxl.styles import Font as _XLFont, PatternFill as _XLFill, Alignment as _XLAlign
                 _wb = _opxl.Workbook()
@@ -985,8 +985,7 @@ with st.sidebar:
                 _ws.title = "SOW Library"
                 _headers = [
                     "Client", "Project", "Account Lead", "Date", "Deadline",
-                    "Budget", "Pricing Items", "Discount (%)", "Total (calc)",
-                    "Status", "Created", "Updated",
+                    "Total Investment", "PDF File",
                 ]
                 _hdr_fill = _XLFill(fill_type="solid", fgColor="014BF7")
                 _hdr_font = _XLFont(bold=True, color="FFFFFF")
@@ -995,43 +994,74 @@ with st.sidebar:
                     _cell.fill = _hdr_fill
                     _cell.font = _hdr_font
                     _cell.alignment = _XLAlign(horizontal="center", vertical="center")
+
+                # Generate each SOW PDF and collect bytes
+                _pdf_files = {}  # filename → bytes
                 for _ri, _s in enumerate(_saved, 2):
                     _sd   = _s.get("sow_data") or {}
                     _pi   = _s.get("pricing_items") or []
                     _disc = float(_s.get("sow_discount") or 0)
-                    _tot  = sum((it.get("qty", 0) * it.get("rate", 0)) for it in _pi) * (1 - _disc / 100)
-                    _row  = [
+                    _subtot = sum(it.get("total", 0) for it in _pi)
+                    _tot  = _subtot - (_subtot * _disc / 100)
+                    _cn_safe = (_s.get("client_name") or "Client").replace(" ", "_").replace("/", "-")
+                    _pn_safe = (_s.get("project_name") or "Project").replace(" ", "_").replace("/", "-")
+                    _pdf_fname = f"{_cn_safe}_{_pn_safe}_SOW.pdf"
+                    # Build PDF
+                    try:
+                        _pdf_b = build_sow_pdf(
+                            sow_data=_sd,
+                            pricing_items=_pi,
+                            total=_tot,
+                            discount=_disc,
+                        )
+                        _pdf_files[_pdf_fname] = _pdf_b
+                        _dl_cell_val = _pdf_fname
+                    except Exception:
+                        _dl_cell_val = "PDF error"
+                    _row = [
                         _s.get("client_name", ""),
                         _s.get("project_name", ""),
                         _sd.get("account_lead", ""),
                         _sd.get("date", ""),
                         _sd.get("deadline", ""),
-                        _sd.get("budget", ""),
-                        len(_pi),
-                        _disc,
-                        round(_tot, 2),
-                        _s.get("status", "draft"),
-                        _s.get("created_at", "")[:10],
-                        _s.get("updated_at", _s.get("created_at", ""))[:10],
+                        f"${_tot:,.2f}",
+                        _dl_cell_val,
                     ]
                     for _ci, _val in enumerate(_row, 1):
                         _ws.cell(row=_ri, column=_ci, value=_val)
+                    # Make PDF column a clickable hyperlink (works when files sit in same folder)
+                    if _dl_cell_val != "PDF error":
+                        _ws.cell(row=_ri, column=7).hyperlink = _pdf_fname
+                        _ws.cell(row=_ri, column=7).style = "Hyperlink"
+
                 # Auto-size columns
                 for _col in _ws.columns:
                     _max_w = max(len(str(_c.value or "")) for _c in _col)
-                    _ws.column_dimensions[_col[0].column_letter].width = min(_max_w + 4, 40)
+                    _ws.column_dimensions[_col[0].column_letter].width = min(_max_w + 4, 50)
+
+                # Save Excel to buffer
                 _xl_buf = _io_xl.BytesIO()
                 _wb.save(_xl_buf)
                 _xl_buf.seek(0)
+
+                # Bundle Excel + PDFs into a ZIP
+                _zip_buf = _io_xl.BytesIO()
+                with _zf.ZipFile(_zip_buf, "w", _zf.ZIP_DEFLATED) as _z:
+                    _z.writestr("SOW_Library_Report.xlsx", _xl_buf.getvalue())
+                    for _fname, _fbytes in _pdf_files.items():
+                        _z.writestr(_fname, _fbytes)
+                _zip_buf.seek(0)
+
                 st.download_button(
-                    "⬇ Download Excel Report",
-                    data=_xl_buf.getvalue(),
-                    file_name="SOW_Library_Report.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "⬇ Download Excel + PDFs (.zip)",
+                    data=_zip_buf.getvalue(),
+                    file_name="SOW_Library_Report.zip",
+                    mime="application/zip",
                     use_container_width=True,
+                    help="ZIP contains the Excel report and one PDF per SOW. Extract all to the same folder — the PDF links in Excel will open each file.",
                 )
             except Exception as _xl_ex:
-                st.error(f"Excel export failed: {_xl_ex}")
+                st.error(f"Export failed: {_xl_ex}")
 
         st.divider()
         st.download_button(
