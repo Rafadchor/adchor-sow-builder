@@ -337,12 +337,24 @@ html.dark  .sb-logo-light { display: none !important; }
 }
 
 /* ── Buttons ── */
-.stButton > button {
+.stButton > button,
+[data-testid="stDownloadButton"] > button {
     font-family: 'Montserrat', sans-serif !important;
     font-weight: 700 !important;
     letter-spacing: 0.5px !important;
     border-radius: 8px !important;
     transition: all 0.2s !important;
+}
+[data-testid="stDownloadButton"] > button {
+    background: linear-gradient(135deg,#014bf7,#021de0) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 16px rgba(1,75,247,0.4) !important;
+}
+[data-testid="stDownloadButton"] > button:hover {
+    background: linear-gradient(135deg,#0255ff,#0330f5) !important;
+    box-shadow: 0 6px 22px rgba(1,75,247,0.6) !important;
+    transform: translateY(-1px) !important;
 }
 .stButton > button[kind="primary"] {
     background: #014bf7 !important;
@@ -960,9 +972,9 @@ with st.sidebar:
                         total=_pdf_total,
                         discount=_pdf_disc,
                     )
-                    _pdf_cn  = _pdf_sd.get("client_name", "SOW").replace(" ", "_")
-                    _pdf_pn  = _pdf_sd.get("project_name", "").replace(" ", "_")
-                    _pdf_fn  = f"SOW_{_pdf_cn}_{_pdf_pn}.pdf" if _pdf_pn else f"SOW_{_pdf_cn}.pdf"
+                    _pdf_cn  = _pdf_sd.get("client_name", "SOW").replace("/", "-")
+                    _pdf_pn  = _pdf_sd.get("project_name", "").replace("/", "-")
+                    _pdf_fn  = f"SOW_{_pdf_cn} {_pdf_pn}.pdf" if _pdf_pn else f"SOW_{_pdf_cn}.pdf"
                     st.download_button(
                         "⬇ Download PDF",
                         data=_pdf_sow_bytes,
@@ -1003,9 +1015,9 @@ with st.sidebar:
                     _disc = float(_s.get("sow_discount") or 0)
                     _subtot = sum(it.get("total", 0) for it in _pi)
                     _tot  = _subtot - (_subtot * _disc / 100)
-                    _cn_safe = (_s.get("client_name") or "Client").replace(" ", "_").replace("/", "-")
-                    _pn_safe = (_s.get("project_name") or "Project").replace(" ", "_").replace("/", "-")
-                    _pdf_fname = f"{_cn_safe}_{_pn_safe}_SOW.pdf"
+                    _cn_safe = (_s.get("client_name") or "Client").replace("/", "-")
+                    _pn_safe = (_s.get("project_name") or "Project").replace("/", "-")
+                    _pdf_fname = f"{_cn_safe} {_pn_safe} SOW.pdf"
                     # Build PDF
                     try:
                         _pdf_b = build_sow_pdf(
@@ -2033,28 +2045,11 @@ elif st.session_state.step == 4:
                     total=total,
                     discount=discount_amt,
                 )
-                filename = f"{client}_{project}_SOW.pdf".replace(" ", "_").replace("/", "-")
+                filename = f"{client} {project} SOW.pdf".replace("/", "-")
 
                 # MODIFIED: capture the return value of download_button.
                 # It returns True on the rerun triggered by the click,
                 # which is the reliable signal that the file was sent to the browser.
-                st.markdown("""
-                <style>
-                [data-testid="stMarkdownContainer"]:has(.pdf-dl-marker)
-                  + [data-testid="stDownloadButton"] button {
-                    background: linear-gradient(135deg,#014bf7,#021de0) !important;
-                    color: #ffffff !important;
-                    border: none !important;
-                    font-weight: 700 !important;
-                }
-                [data-testid="stMarkdownContainer"]:has(.pdf-dl-marker)
-                  + [data-testid="stDownloadButton"] button:hover {
-                    background: linear-gradient(135deg,#0255ff,#0330f5) !important;
-                    box-shadow: 0 4px 18px rgba(1,75,247,0.55) !important;
-                }
-                </style>
-                <div class="pdf-dl-marker"></div>
-                """, unsafe_allow_html=True)
                 _downloaded = st.download_button(
                     label=f"Download {filename}",
                     data=pdf_bytes,
