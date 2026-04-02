@@ -1650,31 +1650,185 @@ elif st.session_state.step == 3:
                     else:
                         st.warning(f"'{save_name}' already exists in the library.")
         st.divider()
-        st.download_button(
-            "Download Pricing Library Backup (.json)",
-            data=json.dumps(st.session_state.pricing_library, indent=2),
-            file_name="pricing_library.json",
-            mime="application/json",
-        )
-        st.caption("Restore from a previously downloaded backup:")
+        st.caption("Download pricing library:")
+        _dl1, _dl2, _dl3 = st.columns(3)
+
+        # ── JSON download ─────────────────────────────────────────────────────
+        with _dl1:
+            st.download_button(
+                "JSON",
+                data=json.dumps(st.session_state.pricing_library, indent=2),
+                file_name="pricing_library.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+
+        # ── Excel download ────────────────────────────────────────────────────
+        with _dl2:
+            try:
+                import openpyxl, io as _io2
+                _wb = openpyxl.Workbook()
+                _ws = _wb.active
+                _ws.title = "Pricing Library"
+                _ws.append(["Name", "Description", "Category", "Unit Price"])
+                for _it in lib_items:
+                    _ws.append([
+                        _it.get("name", ""),
+                        _it.get("description", ""),
+                        _it.get("category", ""),
+                        float(_it.get("unit_price", 0)),
+                    ])
+                _xl_buf = _io2.BytesIO()
+                _wb.save(_xl_buf)
+                _xl_buf.seek(0)
+                st.download_button(
+                    "Excel",
+                    data=_xl_buf.getvalue(),
+                    file_name="pricing_library.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
+            except Exception:
+                st.caption("Excel unavailable")
+
+        # ── PDF download ──────────────────────────────────────────────────────
+        with _dl3:
+            try:
+                import io as _io3
+                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+                from reportlab.lib.styles import getSampleStyleSheet
+                from reportlab.lib import colors as _rl_colors
+                from reportlab.lib.units import inch
+                _pdf_buf = _io3.BytesIO()
+                _doc = SimpleDocTemplate(_pdf_buf, pagesize=(8.5*inch, 11*inch),
+                                         leftMargin=0.5*inch, rightMargin=0.5*inch,
+                                         topMargin=0.6*inch, bottomMargin=0.5*inch)
+                _styles = getSampleStyleSheet()
+                _table_data = [["Name", "Category", "Unit Price"]]
+                for _it in lib_items:
+                    _table_data.append([
+                        _it.get("name", ""),
+                        _it.get("category", ""),
+                        f"${float(_it.get('unit_price', 0)):,.0f}",
+                    ])
+                _tbl = Table(_table_data, colWidths=[3.5*inch, 1.5*inch, 1.2*inch])
+                _tbl.setStyle(TableStyle([
+                    ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#014bf7")),
+                    ("TEXTCOLOR",   (0,0), (-1,0),  _rl_colors.white),
+                    ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
+                    ("FONTSIZE",    (0,0), (-1,-1), 9),
+                    ("ROWBACKGROUNDS", (0,1), (-1,-1), [_rl_colors.white, _rl_colors.HexColor("#f4f6fc")]),
+                    ("GRID",        (0,0), (-1,-1), 0.5, _rl_colors.HexColor("#e4e8f4")),
+                    ("VALIGN",      (0,0), (-1,-1), "MIDDLE"),
+                    ("TOPPADDING",  (0,0), (-1,-1), 5),
+                    ("BOTTOMPADDING",(0,0),(-1,-1), 5),
+                ]))
+                _doc.build([
+                    Paragraph("Adchor Pricing Library", _styles["Title"]),
+                    Spacer(1, 0.2*inch),
+                    _tbl,
+                ])
+                _pdf_buf.seek(0)
+                st.download_button(
+                    "PDF",
+                    data=_pdf_buf.getvalue(),
+                    file_name="pricing_library.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            except Exception:
+                st.caption("PDF unavailable")
+
+        # ── Upload / restore ──────────────────────────────────────────────────
+        st.caption("Restore or import pricing items (JSON, Excel, or PDF rate card):")
         _pl_up = st.file_uploader(
-            "Upload pricing_library.json to restore",
-            type=["json"],
+            "Upload pricing library or rate card",
+            type=["json", "xlsx", "pdf"],
             key="pricing_lib_upload",
-            help="Only accepts .json backup files downloaded from this app",
         )
         if _pl_up:
-            try:
-                _pl_restored = json.load(_pl_up)
-                if "items" in _pl_restored:
-                    st.session_state.pricing_library = _pl_restored
-                    save_library(_pl_restored)
-                    st.success(f"Restored {len(_pl_restored['items'])} pricing items.")
-                    st.rerun()
+            _ext = _pl_up.name.rsplit(".", 1)[-1].lower()
+            if _ext == "json":
+                try:
+                    _pl_restored = json.load(_pl_up)
+                    if "items" in _pl_restored:
+                        st.session_state.pricing_library = _pl_restored
+                        save_library(_pl_restored)
+                        st.success(f"✓ Restored {len(_pl_restored['items'])} pricing items.")
+                        st.rerun()
+                    else:
+                        st.error("Invalid pricing library JSON file.")
+                except Exception:
+                    st.error("Could not read JSON file.")
+
+            elif _ext == "xlsx":
+                try:
+                    import openpyxl, io as _io4
+                    _wb2 = openpyxl.load_workbook(_io4.BytesIO(_pl_up.read()))
+                    _ws2 = _wb2.active
+                    _new_items = []
+                    for _row in _ws2.iter_rows(min_row=2, values_only=True):
+                        _nm = str(_row[0] or "").strip()
+                        if not _nm:
+                            continue
+                        _new_items.append({
+                            "name":        _nm,
+                            "description": str(_row[1] or "").strip(),
+                            "category":    str(_row[2] or "").strip(),
+                            "unit_price":  float(_row[3] or 0),
+                        })
+                    if _new_items:
+                        _pl_new = {"items": _new_items}
+                        st.session_state.pricing_library = _pl_new
+                        save_library(_pl_new)
+                        st.success(f"✓ Imported {len(_new_items)} items from Excel.")
+                        st.rerun()
+                    else:
+                        st.error("No items found in Excel file. Ensure headers are: Name, Description, Category, Unit Price.")
+                except Exception as _xe:
+                    st.error(f"Could not read Excel file: {_xe}")
+
+            elif _ext == "pdf":
+                if not st.session_state.get("api_key"):
+                    st.error("API key not configured — cannot extract pricing from PDF.")
                 else:
-                    st.error("Invalid pricing library file.")
-            except Exception:
-                st.error("Could not read file.")
+                    with st.spinner("Extracting pricing items from PDF…"):
+                        try:
+                            from pypdf import PdfReader
+                            import io as _io5
+                            _pr = PdfReader(_io5.BytesIO(_pl_up.read()))
+                            _ptxt = "\n".join(p.extract_text() or "" for p in _pr.pages).strip()
+                            if not _ptxt:
+                                st.error("Could not extract text from this PDF.")
+                            else:
+                                import anthropic as _ant2
+                                _cl2 = _ant2.Anthropic(api_key=st.session_state.api_key)
+                                _m2  = _cl2.messages.create(
+                                    model="claude-sonnet-4-6",
+                                    max_tokens=2048,
+                                    messages=[{"role": "user", "content": (
+                                        "Extract all pricing / service items from this rate card or pricing document.\n\n"
+                                        f"Document text:\n{_ptxt[:6000]}\n\n"
+                                        "Return a JSON array of objects with keys: "
+                                        "name, description, category, unit_price (number).\n"
+                                        "Return raw JSON array only — no markdown, no code fences."
+                                    )}],
+                                )
+                                _raw = _m2.content[0].text.strip()
+                                if _raw.startswith("```"):
+                                    _lns = _raw.splitlines()
+                                    _raw = "\n".join(_lns[1:-1] if _lns[-1].strip() == "```" else _lns[1:]).strip()
+                                _pit = json.loads(_raw)
+                                if isinstance(_pit, list) and _pit:
+                                    _pl_pdf = {"items": _pit}
+                                    st.session_state.pricing_library = _pl_pdf
+                                    save_library(_pl_pdf)
+                                    st.success(f"✓ Extracted {len(_pit)} pricing items from PDF.")
+                                    st.rerun()
+                                else:
+                                    st.error("No pricing items found in this PDF.")
+                        except Exception as _pe:
+                            st.error(f"PDF extraction failed: {_pe}")
 
     st.divider()
     col_back, col_save3, col_next = st.columns([1, 1, 1])
