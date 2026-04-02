@@ -2040,17 +2040,20 @@ elif st.session_state.step == 4:
                 # which is the reliable signal that the file was sent to the browser.
                 st.markdown("""
                 <style>
-                div[data-testid="stDownloadButton"][data-key="main_pdf_dl"] button {
+                [data-testid="stMarkdownContainer"]:has(.pdf-dl-marker)
+                  + [data-testid="stDownloadButton"] button {
                     background: linear-gradient(135deg,#014bf7,#021de0) !important;
                     color: #ffffff !important;
                     border: none !important;
                     font-weight: 700 !important;
                 }
-                div[data-testid="stDownloadButton"][data-key="main_pdf_dl"] button:hover {
+                [data-testid="stMarkdownContainer"]:has(.pdf-dl-marker)
+                  + [data-testid="stDownloadButton"] button:hover {
                     background: linear-gradient(135deg,#0255ff,#0330f5) !important;
                     box-shadow: 0 4px 18px rgba(1,75,247,0.55) !important;
                 }
                 </style>
+                <div class="pdf-dl-marker"></div>
                 """, unsafe_allow_html=True)
                 _downloaded = st.download_button(
                     label=f"Download {filename}",
