@@ -942,10 +942,12 @@ with st.sidebar:
 
         # ── Import SOW from PDF ───────────────────────────────────────────────
         st.caption("Import a previous SOW PDF to pre-populate fields:")
+        # Use a rotating key so the uploader resets after a successful extraction
+        _pdf_uploader_key = f"sow_pdf_import_{st.session_state.get('sow_pdf_upload_count', 0)}"
         _pdf_up = st.file_uploader(
             "Upload a previous SOW PDF",
             type=["pdf"],
-            key="sow_pdf_import",
+            key=_pdf_uploader_key,
             help="Upload a previously generated Adchor SOW PDF — AI will extract the content and pre-populate all fields for editing.",
         )
         if _pdf_up:
@@ -1000,7 +1002,6 @@ with st.sidebar:
                     except Exception as _e:
                         _sow_extract_error = f"Extraction failed: {_e}"
 
-                # Rerun must happen OUTSIDE the spinner context
                 if _sow_extract_result:
                     st.session_state.sow_data = _sow_extract_result
                     for _wk in ["ta_why_now", "ta_project_overview", "ta_core_message",
@@ -1009,6 +1010,8 @@ with st.sidebar:
                     for _wi in range(30):
                         for _wk in [f"st_{_wi}", f"sd_{_wi}", f"ss_{_wi}", f"del_{_wi}"]:
                             st.session_state.pop(_wk, None)
+                    # Rotate uploader key so it resets on next render (prevents re-extraction loop)
+                    st.session_state.sow_pdf_upload_count = st.session_state.get("sow_pdf_upload_count", 0) + 1
                     st.session_state.step = 2
                     st.session_state.ai_reword_result = ""
                     st.rerun()
