@@ -603,8 +603,8 @@ def upsert_sow_to_library(sow_data: dict, pricing_items: list, sow_discount: flo
     import uuid as _uuid
     lib = st.session_state.get("sow_library", load_sow_library())
     sows = lib.get("sows", [])
-    client  = (sow_data or {}).get("client_name", "").strip()
-    project = (sow_data or {}).get("project_name", "").strip()
+    client  = (sow_data or {}).get("client_name", "").strip() or "Unknown Client"
+    project = (sow_data or {}).get("project_name", "").strip() or "Untitled Project"
     now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
     # Match by client + project name to allow updates
     existing = next(
@@ -620,8 +620,8 @@ def upsert_sow_to_library(sow_data: dict, pricing_items: list, sow_discount: flo
     else:
         sows.insert(0, {
             "id":            str(_uuid.uuid4()),
-            "client_name":  client  or "Unknown Client",
-            "project_name": project or "Untitled Project",
+            "client_name":  client,
+            "project_name": project,
             "created_at":   now,
             "updated_at":   now,
             "status":       "draft",
