@@ -2008,12 +2008,27 @@ elif st.session_state.step == 4:
                 # MODIFIED: capture the return value of download_button.
                 # It returns True on the rerun triggered by the click,
                 # which is the reliable signal that the file was sent to the browser.
+                st.markdown("""
+                <style>
+                div[data-testid="stDownloadButton"][data-key="main_pdf_dl"] button {
+                    background: linear-gradient(135deg,#014bf7,#021de0) !important;
+                    color: #ffffff !important;
+                    border: none !important;
+                    font-weight: 700 !important;
+                }
+                div[data-testid="stDownloadButton"][data-key="main_pdf_dl"] button:hover {
+                    background: linear-gradient(135deg,#0255ff,#0330f5) !important;
+                    box-shadow: 0 4px 18px rgba(1,75,247,0.55) !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
                 _downloaded = st.download_button(
                     label=f"Download {filename}",
                     data=pdf_bytes,
                     file_name=filename,
                     mime="application/pdf",
                     use_container_width=True,
+                    key="main_pdf_dl",
                 )
                 if _downloaded:
                     st.session_state.pdf_downloaded = True
